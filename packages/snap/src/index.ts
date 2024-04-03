@@ -8,7 +8,6 @@ import type {
   OnRpcRequestHandler,
 } from '@metamask/snaps-sdk';
 
-import type { ChainConfig } from './keyring';
 import { AccountAbstractionKeyring } from './keyring';
 import { logger } from './logger';
 import { InternalMethod, originPermissions } from './permissions';
@@ -59,17 +58,6 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
   // Handle custom methods.
   switch (request.method) {
-    case InternalMethod.SetConfig: {
-      if (!request.params?.length) {
-        throw new Error('Missing config');
-      }
-      return (await getKeyring()).setConfig(request.params as ChainConfig);
-    }
-
-    case InternalMethod.GetConfigs: {
-      return (await getKeyring()).getConfigs();
-    }
-
     case InternalMethod.NewGreet: {
       return (await getKeyring()).greetRequest(request.params as EthBaseTransaction[]);
     }

@@ -30,13 +30,12 @@ import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
 import { v4 as uuid } from 'uuid';
 
-import { DEFAULT_AA_FACTORIES } from './constants/aa-factories';
+import { AA_CONFIG } from './constants/aa-config';
 import { CHAIN_IDS } from './constants/chain-ids';
 import {
   DUMMY_SIGNATURE,
   getDummyPaymasterAndData,
 } from './constants/dummy-values';
-import { DEFAULT_ENTRYPOINTS } from './constants/entrypoints';
 import { logger } from './logger';
 import { InternalMethod } from './permissions';
 import { saveState } from './stateManagement';
@@ -62,18 +61,15 @@ const unsupportedAAMethods = [
 ];
 
 export type ChainConfig = {
-  simpleAccountFactory?: string;
-  entryPoint?: string;
-  bundlerUrl?: string;
-  customVerifyingPaymasterSK?: string;
-  customVerifyingPaymasterAddress?: string;
+  version: string;
+  entryPoint: string;
+  simpleAccountFactory: string;
+  bobaPaymaster?: string;
+  bundlerUrl: string;
 };
-
-export type ChainConfigs = Record<string, ChainConfig>;
 
 export type KeyringState = {
   wallets: Record<string, Wallet>;
-  config: ChainConfigs;
 };
 
 export type Wallet = {
@@ -185,27 +181,6 @@ export class AccountAbstractionKeyring implements Keyring {
     this.#state = state;
   }
 
-  /**
-   * Set the configuration options for the current chain.
-   *
-   * @param config - The configuration to set.
-   * @throws If the configuration is invalid.
-   * @returns The updated configuration for the current chain.
-   */
-  async setConfig(config: ChainConfig): Promise<ChainConfig> {
-    const { chainId } = await provider.getNetwork();
-
-    validateConfig(config);
-
-    this.#state.config[Number(chainId)] = {
-      ...this.#state.config[Number(chainId).toString()],
-      ...config,
-    };
-
-    await this.#saveState();
-    return this.#state.config[Number(chainId).toString()]!;
-  }
-
 
   /**
    * Send the greet message to user
@@ -219,16 +194,6 @@ export class AccountAbstractionKeyring implements Keyring {
       transactions
     }
 
-  }
-
-
-
-  /**
-   * Retrieves the configuration settings for the keyring.
-   * @returns A promise that resolves to the ChainConfigs object containing the configuration settings.
-   */
-  async getConfigs(): Promise<ChainConfigs> {
-    return this.#state.config;
   }
 
   /**
@@ -430,34 +395,18 @@ export class AccountAbstractionKeyring implements Keyring {
   ): Promise<SubmitRequestResponse> {
     const { method, params = [] } = request.request as JsonRpcRequest;
 
-    switch (method) {
-      case InternalMethod.GetConfigs: {
-        return {
-          pending: false,
-          result: await this.getConfigs(),
-        };
-      }
-      case InternalMethod.SetConfig: {
-        return {
-          pending: false,
-          result: await this.setConfig((params as [ChainConfig])[0]),
-        };
-      }
-      default: {
-        const { scope } = (params as any)[0] || {}
-        console.log(`handling goes here`, scope, JSON.stringify(request))
-        const signature = await this.#handleSigningRequest({
-          account: this.#getWalletById(request.id).account,
-          method,
-          params,
-          scope: scope,
-        });
-        return {
-          pending: false,
-          result: signature,
-        };
-      }
-    }
+    const { scope } = (params as any)[0] || {}
+    console.log(`handling goes here`, scope, JSON.stringify(request))
+    const signature = await this.#handleSigningRequest({
+      account: this.#getWalletById(request.id).account,
+      method,
+      params,
+      scope: scope,
+    });
+    return {
+      pending: false,
+      result: signature,
+    };
   }
 
   #getWalletById(accountId: string): Wallet {
@@ -542,7 +491,7 @@ export class AccountAbstractionKeyring implements Keyring {
         return await this.#prepareAndSignUserOperationBoba(
           account.address,
           transactions,
-          '',// paymaster type
+          '', // paymaster type
           '0x', /// paymaster address
           '0x', // fee token address
         );
@@ -567,10 +516,10 @@ export class AccountAbstractionKeyring implements Keyring {
         return await this.#prepareUserOperation(account.address, transactions);
       }
 
-      case EthMethod.PatchUserOperation: {
-        const [userOp] = params as [EthUserOperation];
-        return await this.#patchUserOperation(account.address, userOp);
-      }
+      // case EthMethod.PatchUserOperation: {
+      //   const [userOp] = params as [EthUserOperation];
+      //   return await this.#patchUserOperation(account.address, userOp);
+      // }
 
       case EthMethod.SignUserOperation: {
         const [userOp] = params as [EthUserOperation];
@@ -628,11 +577,7 @@ export class AccountAbstractionKeyring implements Keyring {
       initCode = wallet.initCode;
     }
 
-    const chainConfig = this.#getChainConfig(Number(chainId));
     const entryPoint = await this.#getEntryPoint(Number(chainId), signer);
-
-    const verifyingPaymasterAddress =
-      chainConfig?.customVerifyingPaymasterAddress;
 
     // ethers.utils.hexlify(transaction.value)
     const callDataReq = aaInstance.interface.encodeFunctionData('execute', [
@@ -686,19 +631,6 @@ export class AccountAbstractionKeyring implements Keyring {
       signature: DUMMY_SIGNATURE,
     };
 
-    // const ethBaseUserOp: EthUserOperation = {
-    //   sender: address,
-    //   nonce,
-    //   initCode,
-    //   callData: callDataReq,
-    //   callGasLimit: callGasLimitReq.toString(),
-    //   verificationGasLimit: verificationGasLimitReq.toString(),
-    //   preVerificationGas: DUMMY_GAS_VALUES.preVerificationGas,
-    //   maxFeePerGas: maxFeePerGasReq.toString(),
-    //   maxPriorityFeePerGas: maxPriorityFeePerGasReq.toString(),
-    //   signature: DUMMY_SIGNATURE,
-    //   paymasterAndData: getDummyPaymasterAndData(verifyingPaymasterAddress),
-    // };
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
     console.log(signedUserOp);
     ethBaseUserOp.signature = signedUserOp;
@@ -764,9 +696,6 @@ export class AccountAbstractionKeyring implements Keyring {
       throwError(`[Snap] Bundler URL not found for chain: ${chainId}`);
     }
 
-    const verifyingPaymasterAddress =
-      chainConfig?.customVerifyingPaymasterAddress;
-
     const ethBaseUserOp: EthBaseUserOperation = {
       nonce,
       initCode,
@@ -776,52 +705,50 @@ export class AccountAbstractionKeyring implements Keyring {
         transaction.data ?? ethers.ZeroHash,
       ]),
       dummySignature: DUMMY_SIGNATURE,
-      dummyPaymasterAndData: getDummyPaymasterAndData(
-        verifyingPaymasterAddress,
-      ),
+      dummyPaymasterAndData: getDummyPaymasterAndData(),
       bundlerUrl: chainConfig.bundlerUrl,
     };
     return ethBaseUserOp;
   }
 
-  async #patchUserOperation(
-    address: string,
-    userOp: EthUserOperation,
-  ): Promise<EthUserOperationPatch> {
-    const wallet = this.#getWalletByAddress(address);
-    const signer = getSigner(wallet.privateKey);
-    const { chainId } = await provider.getNetwork();
-    const chainConfig = this.#getChainConfig(Number(chainId));
+  // async #patchUserOperation(
+  //   address: string,
+  //   userOp: EthUserOperation,
+  // ): Promise<EthUserOperationPatch> {
+  //   const wallet = this.#getWalletByAddress(address);
+  //   const signer = getSigner(wallet.privateKey);
+  //   const { chainId } = await provider.getNetwork();
+  //   const chainConfig = this.#getChainConfig(Number(chainId));
 
-    const verifyingPaymasterAddress =
-      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      chainConfig?.customVerifyingPaymasterAddress!;
+  //   const verifyingPaymasterAddress =
+  //     // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+  //     chainConfig?.customVerifyingPaymasterAddress!;
 
-    if (!verifyingPaymasterAddress) {
-      return { paymasterAndData: '0x' };
-    }
+  //   if (!verifyingPaymasterAddress) {
+  //     return { paymasterAndData: '0x' };
+  //   }
 
-    const verifyingPaymaster = VerifyingPaymaster__factory.connect(
-      verifyingPaymasterAddress,
-      signer,
-    );
+  //   const verifyingPaymaster = VerifyingPaymaster__factory.connect(
+  //     verifyingPaymasterAddress,
+  //     signer,
+  //   );
 
-    const verifyingSigner = getSigner(
-      chainConfig?.customVerifyingPaymasterSK ?? wallet.privateKey,
-    );
+  //   const verifyingSigner = getSigner(
+  //     chainConfig?.customVerifyingPaymasterSK ?? wallet.privateKey,
+  //   );
 
-    // Create a hash that doesn't expire
-    const hash = await verifyingPaymaster.getHash(userOp, 0, 0);
-    const signature = await verifyingSigner.signMessage(ethers.getBytes(hash));
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const paymasterAndData = `${await verifyingPaymaster.getAddress()}${stripHexPrefix(
-      ethers.AbiCoder.defaultAbiCoder().encode(['uint48', 'uint48'], [0, 0]),
-    )}${stripHexPrefix(signature)}`;
+  //   // Create a hash that doesn't expire
+  //   const hash = await verifyingPaymaster.getHash(userOp, 0, 0);
+  //   const signature = await verifyingSigner.signMessage(ethers.getBytes(hash));
+  //   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  //   const paymasterAndData = `${await verifyingPaymaster.getAddress()}${stripHexPrefix(
+  //     ethers.AbiCoder.defaultAbiCoder().encode(['uint48', 'uint48'], [0, 0]),
+  //   )}${stripHexPrefix(signature)}`;
 
-    return {
-      paymasterAndData,
-    };
-  }
+  //   return {
+  //     paymasterAndData,
+  //   };
+  // }
 
   async #signUserOperation(
     address: string,
@@ -857,16 +784,7 @@ export class AccountAbstractionKeyring implements Keyring {
     if (chainConfig?.simpleAccountFactory) {
       factoryAddress = chainConfig.simpleAccountFactory;
     } else {
-      const entryPointVersion =
-        DEFAULT_ENTRYPOINTS[chainId]?.version.toString() ??
-        throwError(`[Snap] Unknown EntryPoint for chain ${chainId}`);
-      factoryAddress =
-        (DEFAULT_AA_FACTORIES[entryPointVersion] as Record<string, string>)?.[
-          chainId.toString()
-        ] ??
-        throwError(
-          `[Snap] Unknown AA Factory address for chain ${chainId} and EntryPoint version ${entryPointVersion}`,
-        );
+      throwError(`[Snap] Unknown AA Factory address for chain ${chainId}`);
     }
     return SimpleAccountFactory__factory.connect(factoryAddress, signer);
   }
@@ -877,21 +795,17 @@ export class AccountAbstractionKeyring implements Keyring {
     }
     const entryPointAddress =
       this.#getChainConfig(chainId)?.entryPoint ??
-      DEFAULT_ENTRYPOINTS[chainId]?.address ??
       throwError(`[Snap] Unknown EntryPoint for chain ${chainId}`);
 
     return EntryPoint__factory.connect(entryPointAddress, signer);
   }
 
   #getChainConfig(chainId: number): ChainConfig | undefined {
-    return this.#state.config?.[chainId];
+    return AA_CONFIG[chainId];
   }
 
   #isSupportedChain(chainId: number): boolean {
-    return (
-      Object.values(CHAIN_IDS).includes(chainId) ||
-      Boolean(this.#state.config[chainId])
-    );
+    return Object.values(CHAIN_IDS).includes(chainId);
   }
 
   #doesAccountSupportChain(accountId: string, scope: string): boolean {

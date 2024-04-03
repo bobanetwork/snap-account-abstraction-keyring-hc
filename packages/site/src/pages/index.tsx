@@ -129,7 +129,7 @@ const Index = () => {
       params: {
         snapId: defaultSnapOrigin,
         request: {
-          method: 'eth_prepareUserOperation',
+          method: 'snap.internal.sendBoba',
           params: [transactionDetails],
           id: snapState.accounts[0]?.id || '',
           // request: {
