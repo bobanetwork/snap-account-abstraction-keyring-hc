@@ -593,17 +593,24 @@ export class AccountAbstractionKeyring implements Keyring {
     });
 
     // eslint-disable-next-line prefer-template
-    const deployerCallDataReq = '0x' + initCode.substring(42);
-    const initGasReq = await provider.estimateGas({
-      to: initCode.substring(0, 42),
-      data: deployerCallDataReq,
-    });
+    let initGasReq;
+    if (initCode === null || initCode === '0x') {
+      initGasReq = BigInt(0);
+    } else {
+      const deployerCallDataReq = '0x' + initCode.substring(42);
+      initGasReq = await provider.estimateGas({
+        to: initCode.substring(0, 42),
+        data: deployerCallDataReq,
+      });
+    }
 
     // verification gasLimit expected is 100000
     const verificationGasLimitReq = BigInt(100000) + initGasReq;
 
-    const maxFeePerGasReq = BigInt('1000000000');
-    const maxPriorityFeePerGasReq = BigInt('1000000000');
+    const feeData = await provider.getFeeData();
+    const maxFeePerGasReq = feeData.maxFeePerGas ?? BigInt('1000000000');
+    const maxPriorityFeePerGasReq =
+      feeData.maxPriorityFeePerGas ?? BigInt('1000000000');
 
     const paymasterAndDataReq = await this.#getPaymasterAndData(
       paymasterType,
@@ -624,12 +631,15 @@ export class AccountAbstractionKeyring implements Keyring {
     };
 
     const preVerificationGasReq = calcPreVerificationGas(partialUserOp);
+    // check if calculated preVerificationGas is adequate by calling eth_estimateUserOperationGas on the bundler here
 
     const ethBaseUserOp: EthUserOperation = {
       ...partialUserOp,
       preVerificationGas: preVerificationGasReq,
       signature: DUMMY_SIGNATURE,
     };
+
+    console.log(ethBaseUserOp)
 
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
     console.log(signedUserOp);

@@ -115,7 +115,7 @@ const Index = () => {
     const transactionDetails: Record<string, any> = {
       payload: {
         to: targetAccount,
-      value: transferAmount,
+        value: transferAmount,
         data: '0x'
       },
       account: snapState.accounts[0]?.id || '',
