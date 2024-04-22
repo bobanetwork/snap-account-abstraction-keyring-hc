@@ -65,6 +65,7 @@ export type ChainConfig = {
   entryPoint: string;
   simpleAccountFactory: string;
   bobaPaymaster?: string;
+  bobaToken?: string;
   bundlerUrl: string;
 };
 
@@ -500,12 +501,20 @@ export class AccountAbstractionKeyring implements Keyring {
       case 'eth_sendUserOpBobaPM': {
         console.log('Preparing User Op');
         const transactions = params as EthBaseTransaction[];
+        const chainConfig = this.#getChainConfig(Number(chainId));
+        if (!chainConfig?.bobaPaymaster) {
+          throwError(`[Snap] Paymaster not found for chain: ${chainId}`);
+        }
+        if (!chainConfig?.bobaToken) {
+          throwError(`[Snap] Boba token not found for chain: ${chainId}`);
+        }
+
         return await this.#prepareAndSignUserOperationBoba(
           account.address,
           transactions,
           'alt_fee',
-          '0x',
-          '0x',
+          chainConfig.bobaPaymaster,
+          chainConfig.bobaToken,
         );
       }
 
