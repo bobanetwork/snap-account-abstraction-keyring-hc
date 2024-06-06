@@ -24,6 +24,6 @@ export const AA_CONFIG = {
     simpleAccountFactory: '0x9406cc6185a346906296840746125a0e44976454',
     bobaPaymaster: '0x8223388f7aF211d84289783ed97ffC5Fefa14256',
     bobaToken: '0x4200000000000000000000000000000000000023',
-    bundlerUrl: 'https://bundler.sepolia.boba.network/rpc',
+    bundlerUrl: 'https://bundler-hc.sepolia.boba.network',
   },
 };
