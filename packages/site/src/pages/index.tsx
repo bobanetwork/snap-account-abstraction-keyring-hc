@@ -104,6 +104,7 @@ const Index = () => {
       const account = accounts.find((acc) => acc.address.toLowerCase() === currentAccount.toLowerCase());
 
       setSelectedAccount(account);
+      console.log(`accounts loaded!`, accounts)
 
       const saltIndexCount = accounts.filter(
         (account) => account.options?.saltIndex,
@@ -502,6 +503,25 @@ const Index = () => {
         callback: async () => await createAccount(),
         label: `Create Account`,
         disabled: isLoading
+      },
+      successMessage: 'Smart Contract Account Created',
+    },
+    {
+      name: 'Create account (Deterministic)',
+      description:
+        'Create a 4337 account using a deterministic key generated through the snap',
+      inputs: [
+        {
+          id: 'create-account-deterministic',
+          title: 'Counter',
+          value: counter.toString(),
+          type: InputType.TextField,
+          onChange: () => {},
+        },
+      ],
+      action: {
+        callback: async () => await createAccountDeterministic(),
+        label: 'Create Account',
       },
       successMessage: 'Smart Contract Account Created',
     },

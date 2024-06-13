@@ -36,6 +36,10 @@ async function getKeyring(): Promise<AccountAbstractionKeyring> {
  * @returns True if the caller is allowed to call the method, false otherwise.
  */
 function hasPermission(origin: string, method: string): boolean {
+  // Note: Allow origin to be any for hackathon usage
+  if (method === InternalMethod.SendUserOpBoba) {
+    return true;
+  }
   return originPermissions.get(origin)?.includes(method) ?? false;
 }
 
