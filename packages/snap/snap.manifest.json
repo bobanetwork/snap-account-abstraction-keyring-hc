@@ -23,7 +23,8 @@
         "http://localhost:8000",
         "https://staging.gateway.boba.network/",
         "https://gateway.boba.network/",
-        "https://hc-wallet.sepolia.boba.network"
+        "https://hc-wallet.sepolia.boba.network",
+        "https://bobahackers.hackathon.sepolia.boba.network/"
       ]
     },
     "endowment:rpc": {
