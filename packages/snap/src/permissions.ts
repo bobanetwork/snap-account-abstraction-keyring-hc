@@ -89,7 +89,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://bobahackers.hackathon.sepolia.boba.network/',
+    'https://bobahackers.hackathon.sepolia.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
@@ -111,7 +111,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://bobachaincrafters.hackathon.sepolia.boba.network/',
+    'https://bobachaincrafters.hackathon.sepolia.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
@@ -133,7 +133,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://bobablockchainbusters.hackathon.sepolia.boba.network/',
+    'https://bobablockchainbusters.hackathon.sepolia.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
