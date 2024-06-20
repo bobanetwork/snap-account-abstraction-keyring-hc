@@ -1,5 +1,5 @@
 {
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "An account abstraction keyring snap that integrates with MetaMask accounts on Boba Network",
   "proposedName": "Boba Network Account Abstraction Keyring",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring.git"
   },
   "source": {
-    "shasum": "Va2Hfw1otpncjumhLDRaSLhpMQU6lzfOB7zTIAgaS+w=",
+    "shasum": "vPUQtAhoi9xkRP/EXb7JmqKflN+2kaBGR3aFsgMcobA=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -21,10 +21,10 @@
     "endowment:keyring": {
       "allowedOrigins": [
         "http://localhost:8000",
-        "https://staging.gateway.boba.network/",
-        "https://gateway.boba.network/",
+        "https://staging.gateway.boba.network",
+        "https://gateway.boba.network",
         "https://hc-wallet.sepolia.boba.network",
-        "https://bobahackers.hackathon.sepolia.boba.network/",
+        "https://bobahackers.hackathon.sepolia.boba.network",
         "https://bobachaincrafters.hackathon.sepolia.boba.network",
         "https://bobablockchainbusters.hackathon.sepolia.boba.network"
       ]
