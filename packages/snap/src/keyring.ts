@@ -596,11 +596,17 @@ export class AccountAbstractionKeyring implements Keyring {
       (transaction as any).payload.data ?? ethers.ZeroHash,
     ]);
 
-    const callGasLimitReq = await provider.estimateGas({
-      from: await entryPoint.getAddress(),
-      to: wallet.account.address,
-      data: callDataReq,
-    });
+    let callGasLimitReq;
+    try {
+      callGasLimitReq = await provider.estimateGas({
+        from: await entryPoint.getAddress(),
+        to: wallet.account.address,
+        data: callDataReq,
+      });
+    } catch (error) {
+      console.error(`[Snap] Estimating gas failed: ${error}`);
+      callGasLimitReq = BigInt(262144);
+    }
 
     // eslint-disable-next-line prefer-template
     let initGasReq;
@@ -667,6 +673,22 @@ export class AccountAbstractionKeyring implements Keyring {
       preVerificationGasFromBundler > preVerificationGasReq
     ) {
       ethBaseUserOp.preVerificationGas = preVerificationGasFromBundler;
+    }
+
+    const callGasLimitFromBundler = estimatedGas.result?.callGasLimit;
+    if (
+      callGasLimitFromBundler &&
+      callGasLimitFromBundler > callGasLimitReq
+    ) {
+      ethBaseUserOp.callGasLimit = callGasLimitFromBundler;
+    }
+
+    const verificationGasLimitFromBundler = estimatedGas.result?.verificationGasLimit;
+    if (
+      verificationGasLimitFromBundler &&
+      verificationGasLimitFromBundler > verificationGasLimitReq
+    ) {
+      ethBaseUserOp.verificationGasLimit = verificationGasLimitFromBundler;
     }
 
     let pmPayload: ({ value: string; type: NodeType.Copyable; sensitive?: boolean /* eslint-disable camelcase */ | undefined; } | { value: string; type: NodeType.Text; markdown?: boolean | undefined; })[] = [];
