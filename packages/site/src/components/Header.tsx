@@ -84,22 +84,17 @@ export const Header = () => {
     return (
       <VersionStyle>
         <div>
-          <b>Dapp version: </b>
-          {packageInfo.version}
-        </div>
-
-        <div>
-          <b>Snap version (expected): </b>
+          <span>Snap version (expected): </span>
           {snapPackageInfoVersion}
         </div>
 
         {state.installedSnap ? (
           <div>
-            <b>Snap version (installed): </b> {state.installedSnap?.version}
+            <span>Snap version (installed): </span> {state.installedSnap?.version}
           </div>
         ) : (
           <div>
-              <b>Snap version (to install): </b> {snapPackageInfoVersion}
+              <span>Snap version (to install): </span> {snapPackageInfoVersion}
           </div>
         )}
 
