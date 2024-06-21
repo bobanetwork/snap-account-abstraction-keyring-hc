@@ -5,4 +5,4 @@
 export const defaultSnapOrigin =
   process.env.GATSBY_SNAP_ORIGIN ?? `local:http://localhost:8080`;
 
-export const snapPackageInfoVersion = '1.1.2';
+export const snapPackageInfoVersion = '1.1.3';
