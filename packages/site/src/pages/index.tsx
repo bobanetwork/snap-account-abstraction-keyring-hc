@@ -526,25 +526,6 @@ const Index = () => {
       successMessage: 'Smart Contract Account Created',
     },
     {
-      name: 'Create account (Deterministic)',
-      description:
-        'Create a 4337 account using a deterministic key generated through the snap',
-      inputs: [
-        {
-          id: 'create-account-deterministic',
-          title: 'Counter',
-          value: counter.toString(),
-          type: InputType.TextField,
-          onChange: () => {},
-        },
-      ],
-      action: {
-        callback: async () => await createAccountDeterministic(),
-        label: 'Create Account',
-      },
-      successMessage: 'Smart Contract Account Created',
-    },
-    {
       name: 'Transfer Funds',
       description: 'Transfer funds from your Smart Account',
       inputs: [
