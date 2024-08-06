@@ -26,4 +26,13 @@ export const AA_CONFIG = {
     bobaToken: '0x4200000000000000000000000000000000000023',
     bundlerUrl: 'https://bundler.sepolia.boba.network/rpc',
   },
+  // Local
+  [CHAIN_IDS.LOCAL]: {
+    version: '0.6.0',
+    entryPoint: '0x43536f912f87490fa70d0AB6D58f8B9CD250394A',
+    simpleAccountFactory: '0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07',
+    bobaPaymaster: '0x',
+    bobaToken: '0x4200000000000000000000000000000000000023',
+    bundlerUrl: 'http://localhost:3300',
+  },
 };

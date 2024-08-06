@@ -1829,7 +1829,6 @@ __metadata:
     "@typescript-eslint/parser": ^5.33.0
     chai: ^4.3.7
     depcheck: ^1.4.6
-    dotenv: ^16.3.1
     eslint: ^8.21.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-import: ^2.26.0
@@ -11874,13 +11873,6 @@ __metadata:
   version: 10.0.0
   resolution: "dotenv@npm:10.0.0"
   checksum: f412c5fe8c24fbe313d302d2500e247ba8a1946492db405a4de4d30dd0eb186a88a43f13c958c5a7de303938949c4231c56994f97d05c4bc1f22478d631b4005
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.3.1":
-  version: 16.4.1
-  resolution: "dotenv@npm:16.4.1"
-  checksum: a343f0a1d156deef8c60034f797969867af4dbccfacedd4ac15fad04547e7ffe0553b58fc3b27a5837950f0d977e38e9234943fbcec4aeced4e3d044309a76ab
   languageName: node
   linkType: hard
 
