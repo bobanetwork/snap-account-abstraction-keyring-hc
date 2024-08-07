@@ -66,4 +66,92 @@ export const originPermissions = new Map<string, string[]>([
       InternalMethod.SendUserOpBobaPM,
     ],
   ],
+  [
+    'https://hc-wallet.sepolia.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      // TODO: determine if these methods need to be restricted to our own UI
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://bobahackers.hackathon.sepolia.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      // TODO: determine if these methods need to be restricted to our own UI
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://bobachaincrafters.hackathon.sepolia.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      // TODO: determine if these methods need to be restricted to our own UI
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://bobablockchainbusters.hackathon.sepolia.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      // TODO: determine if these methods need to be restricted to our own UI
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
 ]);

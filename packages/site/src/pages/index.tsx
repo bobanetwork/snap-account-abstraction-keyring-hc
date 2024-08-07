@@ -104,6 +104,7 @@ const Index = () => {
       const account = accounts.find((acc) => acc.address.toLowerCase() === currentAccount.toLowerCase());
 
       setSelectedAccount(account);
+      console.log(`accounts loaded!`, accounts)
 
       const saltIndexCount = accounts.filter(
         (account) => account.options?.saltIndex,
