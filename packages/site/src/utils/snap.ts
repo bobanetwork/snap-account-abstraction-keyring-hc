@@ -1,6 +1,13 @@
-import snapPackageInfo from '../../../snap/package.json';
-import { defaultSnapOrigin } from '../config';
+import { defaultSnapOrigin, snapPackageInfoVersion } from '../config';
 import type { GetSnapsResponse, Snap } from '../types';
+
+// Needed for local network
+export const CHAIN_ID = process.env.CHAIN_ID ?? '' // TODO
+export const CHAIN_NAME = process.env.CHAIN_NAME ?? 'Boba Sepolia'
+export const CHAIN_RPC_URL = process.env.CHAIN_RPC_URL ?? 'https://sepolia.boba.network'
+// TODO: We might want to add more (block explorer, etc.) once we go to mainnet
+
+console.warn("CHAIN:::", CHAIN_NAME, CHAIN_ID, CHAIN_RPC_URL)
 
 /**
  * Get the installed snaps in MetaMask.
@@ -22,17 +29,21 @@ export const getSnaps = async (): Promise<GetSnapsResponse> => {
 export const connectSnap = async (
   snapId: string = defaultSnapOrigin,
   params: Record<'version' | string, unknown> = {
-    version: snapPackageInfo.version,
+    version: snapPackageInfoVersion,
   },
 ) => {
+
+
   // check for current connected chain and force user to switch to boba sepolia.
   const currentChain = window.ethereum.networkVersion;
-  if (currentChain !== '28882') {
+  console.error("HHHLKJ", CHAIN_ID, currentChain)
+
+  if (currentChain !== CHAIN_ID) {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{
-          chainId: '0x70d2'
+          chainId: CHAIN_ID
         }]
       })
     } catch (error: any) {
@@ -40,9 +51,9 @@ export const connectSnap = async (
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: '0x70d2',
-            chainName: 'Boba Sepolia',
-            rpcUrls: ['https://sepolia.boba.network'],
+            chainId: CHAIN_ID,
+            chainName: CHAIN_NAME,
+            rpcUrls: [CHAIN_RPC_URL],
             nativeCurrency: {
               name: 'ETH',
               symbol: "ETH",
