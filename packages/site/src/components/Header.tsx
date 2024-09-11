@@ -86,24 +86,23 @@ export const Header = () => {
     return (
       <VersionStyle>
         <div>
-          <b>Dapp version: </b>
+          <b>Dapp V: </b>
           {packageInfo.version}
         </div>
-
         <div>
-          <b>Snap version (expected): </b>
-          {snapPackageInfo.version}
+          <b>Snap V: </b>
+          <span style={{
+            "backgroundColor": "#4CAF50",
+            "color": "white", "padding": '5px',
+            "borderRadius": "5px"
+          }}>Expected: {snapPackageInfo.version}</span> |
+          <span
+            style={{
+              "backgroundColor": "#4CAF50",
+              "color": "white", "padding": '5px',
+              "borderRadius": "5px"
+            }}>Installed: {state.installedSnap?.version}</span>
         </div>
-
-        {state.installedSnap ? (
-          <div>
-            <b>Snap version (installed): </b> {state.installedSnap?.version}
-          </div>
-        ) : (
-          <div>
-            <b>Snap version (to install): </b> {snapPackageInfo.version}
-          </div>
-        )}
 
         {defaultSnapOrigin.startsWith('local') && `(from ${defaultSnapOrigin})`}
       </VersionStyle>
@@ -117,7 +116,7 @@ export const Header = () => {
         <Title>AA HC Wallet</Title>
       </LogoWrapper>
       <RightContainer>
-        {/* <Version /> */}
+        <Version />
         <HeaderButtons
           state={state}
           onConnectClick={handleConnectClick}
