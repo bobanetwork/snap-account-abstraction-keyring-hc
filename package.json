@@ -27,9 +27,9 @@
   "scripts": {
     "build": "yarn workspaces foreach --parallel --verbose --topological run build",
     "build:dapp": "yarn workspace @bobanetwork/snap-account-abstraction-keyring-site build",
-    "build:snap": "yarn workspace @bobanetwork/snap-account-abstraction-keyring build",
+    "build:snap": "yarn workspace @bobanetwork/snap-account-abstraction-keyring-hc build",
     "build:docs": "typedoc",
-    "postinstall": "yarn workspace @bobanetwork/snap-account-abstraction-keyring compile",
+    "postinstall": "yarn workspace @bobanetwork/snap-account-abstraction-keyring-hc compile",
     "lint": "yarn workspaces foreach --parallel --verbose run lint",
     "lint:deps": "yarn workspaces foreach --parallel --verbose run depcheck",
     "lint:eslint": "yarn workspaces foreach --parallel --verbose run lint:eslint",
