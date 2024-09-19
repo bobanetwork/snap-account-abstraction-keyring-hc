@@ -1,8 +1,8 @@
 import {
   EthBaseTransaction,
   MethodNotSupportedError,
-  handleKeyringRequest,
-} from '@metamask/keyring-api';
+  handleKeyringRequest, KeyringRequest
+} from "@metamask/keyring-api";
 import type {
   OnKeyringRequestHandler,
   OnRpcRequestHandler,
@@ -71,7 +71,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
           method,
           params,
         },
-      } as any);
+      } as KeyringRequest);
     }
 
     default: {
