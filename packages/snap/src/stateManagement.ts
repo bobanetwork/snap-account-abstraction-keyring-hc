@@ -15,15 +15,17 @@ const defaultState: KeyringState = {
  * @returns The current state of the keyring.
  */
 export async function getState(): Promise<KeyringState> {
-  const state = (await snap.request({
-    method: 'snap_manageState',
-    params: { operation: 'get' },
-  })) as any;
-
-  return {
-    ...defaultState,
-    ...state,
-  };
+  try {
+    const state = await snap.request({
+      method: 'snap_manageState',
+      params: { operation: 'get' },
+    }) as KeyringState | null;
+    logger.debug('State retrieved successfully.');
+    return { ...defaultState, ...state };
+  } catch (error) {
+    logger.error('Failed to retrieve state:', error);
+    throw new Error('Could not retrieve state.');
+  }
 }
 
 /**
