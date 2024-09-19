@@ -39,7 +39,6 @@ export const originPermissions = new Map<string, string[]>([
       KeyringRpcMethod.ApproveRequest,
       KeyringRpcMethod.RejectRequest,
       // Custom methods
-      // TODO: determine if these methods need to be restricted to our own UI
       InternalMethod.SendUserOpBoba,
       InternalMethod.SendUserOpBobaPM
     ]
@@ -61,7 +60,6 @@ export const originPermissions = new Map<string, string[]>([
       KeyringRpcMethod.ApproveRequest,
       KeyringRpcMethod.RejectRequest,
       // Custom methods
-      // TODO: determine if these methods need to be restricted to our own UI
       InternalMethod.SendUserOpBoba,
       InternalMethod.SendUserOpBobaPM
     ]
@@ -83,7 +81,6 @@ export const originPermissions = new Map<string, string[]>([
       KeyringRpcMethod.ApproveRequest,
       KeyringRpcMethod.RejectRequest,
       // Custom methods
-      // TODO: determine if these methods need to be restricted to our own UI
       InternalMethod.SendUserOpBoba,
       InternalMethod.SendUserOpBobaPM
     ]
@@ -105,7 +102,6 @@ export const originPermissions = new Map<string, string[]>([
       KeyringRpcMethod.ApproveRequest,
       KeyringRpcMethod.RejectRequest,
       // Custom methods
-      // TODO: determine if these methods need to be restricted to our own UI
       InternalMethod.SendUserOpBoba,
       InternalMethod.SendUserOpBobaPM
     ]
