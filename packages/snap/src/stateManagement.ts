@@ -34,8 +34,14 @@ export async function getState(): Promise<KeyringState> {
  * @param state - New snap state.
  */
 export async function saveState(state: KeyringState) {
-  await snap.request({
-    method: 'snap_manageState',
-    params: { operation: 'update', newState: state },
-  });
+  try {
+    await snap.request({
+      method: 'snap_manageState',
+      params: { operation: 'update', newState: state },
+    });
+    logger.debug('State saved successfully.');
+  } catch (error) {
+    logger.error('Failed to save state:', error);
+    throw new Error('Could not save state.');
+  }
 }
