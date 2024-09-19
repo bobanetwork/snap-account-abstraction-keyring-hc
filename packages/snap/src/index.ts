@@ -18,17 +18,11 @@ let keyring: AccountAbstractionKeyring;
 let keyringPromise: Promise<AccountAbstractionKeyring> | null = null;
 
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
-  if (keyring) {
-    return keyring;
+  if (!keyring) {
+    const state = await getState();
+    keyring = new AccountAbstractionKeyring(state);
   }
-  if (!keyringPromise) {
-    keyringPromise = (async () => {
-      const state = await getState();
-      keyring = new AccountAbstractionKeyring(state);
-      return keyring;
-    })();
-  }
-  return keyringPromise;
+  return keyring;
 }
 
 /**
