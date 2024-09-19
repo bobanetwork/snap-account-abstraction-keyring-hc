@@ -794,23 +794,30 @@ export class AccountAbstractionKeyring implements Keyring {
 
     // For Funds transfer (specific tokens) modify dialog accordingly,
     // for general tx show general dialog
-    const result = (await snap.request({
+    const sourceAddress = address; // The address sending the transaction
+
+    const result = await snap.request({
       method: 'snap_dialog',
       params: {
         type: DialogType.Confirmation,
-        // id: "ghjkl",
         content: panel([
-          heading('Sending Tx to!'),
-          ...pmPayload,
-          text('Target Address'),
+          heading('Transaction Confirmation'),
+          text('Please review the following transaction details:'),
+          text('From (Source Address):'),
+          copyable(sourceAddress),
+          text('To (Target Address):'),
           copyable(to),
-          text('Tx Value'),
+          text('Transaction Value:'),
           copyable(value),
-          text('Tx Data'),
+          text('Transaction Data:'),
           copyable(data),
+          text('Network Chain ID:'),
+          copyable(chainId.toString()),
+          ...pmPayload,
+          text('Please ensure all details are correct before confirming.'),
         ]),
       },
-    })) as any;
+    });
 
     if (!result) {
       throw new Error(`User declined transaction!`);
