@@ -15,18 +15,20 @@ import { InternalMethod, originPermissions } from './permissions';
 import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
+let keyringPromise: Promise<AccountAbstractionKeyring> | null = null;
 
-/**
- * Return the keyring instance. If it doesn't exist, create it.
- */
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
-  if (!keyring) {
-    const state = await getState();
-    if (!keyring) {
-      keyring = new AccountAbstractionKeyring(state);
-    }
+  if (keyring) {
+    return keyring;
   }
-  return keyring;
+  if (!keyringPromise) {
+    keyringPromise = (async () => {
+      const state = await getState();
+      keyring = new AccountAbstractionKeyring(state);
+      return keyring;
+    })();
+  }
+  return keyringPromise;
 }
 
 /**
