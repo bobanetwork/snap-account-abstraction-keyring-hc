@@ -64,7 +64,7 @@ import {
 import { validateConfig } from './utils/validation';
 import { SecurePrivateKey } from './secureKey';
 import { encrypt, decrypt } from './encryption';
-
+import { z } from 'zod';
 
 
 const unsupportedAAMethods = [
@@ -121,6 +121,14 @@ type IUserOpGasEstimate = {
   preVerificationGas: string | undefined;
   verificationGasLimit: string | undefined;
 };
+
+const KeyringRequestSchema = z.object({
+  id: z.string(),
+  request: z.object({
+    method: z.string(),
+    params: z.array(z.unknown()).optional().default([]),
+  }),
+});
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export function packUserOp(op: any, forSignature = true): string {
@@ -397,23 +405,32 @@ export class AccountAbstractionKeyring implements Keyring {
     return this.#syncSubmitRequest(request);
   }
 
-  async #syncSubmitRequest(
-    request: KeyringRequest,
-  ): Promise<SubmitRequestResponse> {
-    const { method, params = [] } = request.request as JsonRpcRequest;
+  async #syncSubmitRequest(request: unknown): Promise<SubmitRequestResponse> {
+    try {
+      const validatedRequest = KeyringRequestSchema.parse(request);
 
-    const { scope } = (params as any)[0] || {};
-    console.log(`handling goes here`, scope, JSON.stringify(request));
-    const signature = await this.#handleSigningRequest({
-      account: this.#getWalletById(request.id).account,
-      method,
-      params,
-      scope,
-    });
-    return {
-      pending: false,
-      result: signature,
-    };
+      const { method, params = [] } = validatedRequest.request;
+      const { scope } = (params[0] as Record<string, unknown>) || {};
+
+      console.log(`handling goes here`, scope, JSON.stringify(validatedRequest));
+
+      const signature = await this.#handleSigningRequest({
+        account: this.#getWalletById(validatedRequest.id).account,
+        method,
+        params: params as Json,
+        scope: scope as string,
+      });
+
+      return {
+        pending: false,
+        result: signature,
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error("Input validation failed:", error.errors);
+      }
+      throw error; // Re-throw the error for higher-level error handling
+    }
   }
 
   #getWalletById(accountId: string): Wallet {
