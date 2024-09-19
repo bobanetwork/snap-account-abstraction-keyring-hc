@@ -112,3 +112,58 @@ export const getSignerPrivateKey = async (index: number) => {
     throw new Error(`Failed to get signer private key for index ${index}`);
   }
 };
+
+
+interface FetchWrapperOptions extends RequestInit {
+  timeout?: number;
+  retries?: number;
+  backoffFactor?: number;
+}
+
+export const fetchWithRetry = async (url: string, options: FetchWrapperOptions = {}): Promise<Response> => {
+  const {
+    timeout = 10000,
+    retries = 3,
+    backoffFactor = 2,
+    ...fetchOptions
+  } = options;
+
+  let lastError: Error = new Error();
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return response;
+
+    } catch (error: any) {
+      lastError = error;
+
+      if (error.name === 'AbortError') {
+        console.warn(`Request timed out (attempt ${attempt + 1} of ${retries})`);
+      } else {
+        console.error(`Error (attempt ${attempt + 1} of ${retries}):`, error);
+      }
+
+      if (attempt === retries - 1) {
+        break;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, Math.pow(backoffFactor, attempt) * 1000));
+    }
+  }
+
+  throw lastError;
+}

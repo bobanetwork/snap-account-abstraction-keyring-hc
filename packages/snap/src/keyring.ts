@@ -60,6 +60,7 @@ import {
   runSensitive,
   throwError,
   getSignerPrivateKey,
+  fetchWithRetry,
 } from './utils/util';
 import { validateConfig } from './utils/validation';
 import { SecurePrivateKey } from './secureKey';
@@ -973,7 +974,7 @@ export class AccountAbstractionKeyring implements Keyring {
       params: [userOp, entryPointAddress],
     };
     try {
-      const response = await fetch(bundlerUrl, {
+      const response = await fetchWithRetry(bundlerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
