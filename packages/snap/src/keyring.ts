@@ -62,6 +62,10 @@ import {
   getSignerPrivateKey,
 } from './utils/util';
 import { validateConfig } from './utils/validation';
+import { SecurePrivateKey } from './secureKey';
+import { encrypt, decrypt } from './encryption';
+
+
 
 const unsupportedAAMethods = [
   EthMethod.SignTransaction,
@@ -88,7 +92,7 @@ export type KeyringState = {
 export type Wallet = {
   account: KeyringAccount;
   admin: string;
-  privateKey: string;
+  encryptedPrivateKey: string;
   chains: Record<string, boolean>;
   salt: string;
   initCode: string;
@@ -250,19 +254,14 @@ export class AccountAbstractionKeyring implements Keyring {
       options?.privateKey ??
       (await getSignerPrivateKey(options.saltIndex as number));
 
-    const { privateKey, address: admin } = this.#getKeyPair(
-      privateKeyGen as string,
-    );
+    const { secureKey, address: admin } = this.#getKeyPair(privateKeyGen as string);
 
-    // The private key should not be stored in the account options since the
-    // account object is exposed to external components, such as MetaMask and
-    // the snap UI.
     if (options?.privateKey) {
       delete options.privateKey;
     }
 
     const { chainId } = await provider.getNetwork();
-    const signer = getSigner(privateKey);
+    const signer = getSigner(await secureKey.getPrivateKey());
 
     // get factory contract by chain
     const aaFactory = await this.#getAAFactory(Number(chainId), signer);
@@ -292,22 +291,7 @@ export class AccountAbstractionKeyring implements Keyring {
       aaFactory.interface.encodeFunctionData('createAccount', [admin, salt]),
     ]);
 
-    // collision check removed to allow re-adding deployed SAs
-    // // check on chain if the account already exists.
-    // // if it does, this means that there is a collision in the salt used.
-    // const accountCollision = (await provider.getCode(aaAddress)) !== '0x';
-    // if (accountCollision) {
-    //   throwError(`[Snap] Account Salt already used, please retry.`);
-    // }
-
-    // Note: this is commented out because the AA is not deployed yet.
-    // Will store the initCode and salt in the wallet object to deploy with first transaction later.
-    // try {
-    //   await aaFactory.createAccount(admin, salt);
-    //   logger.info('[Snap] Deployed AA Account Successfully');
-    // } catch (error) {
-    //   logger.error(`Error to deploy AA: ${(error as Error).message}`);
-    // }
+    const encryptedPrivateKey = await encrypt(await secureKey.getPrivateKey());
 
     try {
       const account: KeyringAccount = {
@@ -324,8 +308,8 @@ export class AccountAbstractionKeyring implements Keyring {
       };
       this.#state.wallets[account.id] = {
         account,
-        admin, // Address of the admin account from private key
-        privateKey,
+        admin,
+        encryptedPrivateKey: encryptedPrivateKey,
         chains: {
           [toCaipChainId(CaipNamespaces.Eip155, chainId.toString())]: false,
         },
@@ -450,16 +434,14 @@ export class AccountAbstractionKeyring implements Keyring {
   }
 
   #getKeyPair(privateKey?: string): {
-    privateKey: string;
+    secureKey: SecurePrivateKey;
     address: string;
   } {
     const privateKeyBuffer: Buffer = runSensitive(
       () =>
         privateKey
           ? Buffer.from(hexToBytes(addHexPrefix(privateKey)))
-          : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - available in snaps
-            Buffer.from(crypto.getRandomValues(new Uint8Array(32))),
+          : Buffer.from(crypto.getRandomValues(new Uint8Array(32))),
       'Invalid private key',
     );
 
@@ -470,7 +452,13 @@ export class AccountAbstractionKeyring implements Keyring {
     const address = toChecksumAddress(
       Address.fromPrivateKey(privateKeyBuffer).toString(),
     );
-    return { privateKey: privateKeyBuffer.toString('hex'), address };
+
+    const secureKey = new SecurePrivateKey(privateKeyBuffer);
+
+    // Zero out the buffer after use
+    privateKeyBuffer.fill(0);
+
+    return { secureKey, address };
   }
 
   async #handleSigningRequest({
@@ -602,7 +590,8 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     const wallet = this.#getWalletByAddress(address);
-    const signer = getSigner(wallet.privateKey);
+    const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
+    const signer = getSigner(decryptedPrivateKey);
 
     // eslint-disable-next-line camelcase
     const aaInstance = SimpleAccount__factory.connect(
@@ -877,7 +866,8 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     const wallet = this.#getWalletByAddress(address);
-    const signer = getSigner(wallet.privateKey);
+    const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
+    const signer = getSigner(decryptedPrivateKey);
 
     // eslint-disable-next-line camelcase
     const aaInstance = SimpleAccount__factory.connect(
@@ -922,7 +912,7 @@ export class AccountAbstractionKeyring implements Keyring {
     return ethBaseUserOp;
   }
 
-  async #sendUserOperation(userOp, entryPointAddress: string, bundlerUrl: string) {
+  async #sendUserOperation(userOp:any, entryPointAddress: string, bundlerUrl: string) {
     const requestBody = {
       method: 'eth_sendUserOperation',
       id: 1,
@@ -948,8 +938,8 @@ export class AccountAbstractionKeyring implements Keyring {
   }
 
   async #estimateUserOpGas(
-    userOp,
-    entryPointAddress,
+    userOp:any,
+    entryPointAddress:any,
     bundlerUrl: string,
   ): Promise<IUserOpGasEstimate> {
     const requestBody = {
@@ -1041,12 +1031,11 @@ export class AccountAbstractionKeyring implements Keyring {
     userOp: EthUserOperation,
   ): Promise<string> {
     const wallet = this.#getWalletByAddress(address);
-    const signer = getSigner(wallet.privateKey);
+    const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
+    const secureKey = new SecurePrivateKey(decryptedPrivateKey);
+
     const { chainId } = await provider.getNetwork();
-    const entryPoint = await this.#getEntryPoint(Number(chainId), signer);
-    logger.info(
-      `[Snap] SignUserOperation:\n${JSON.stringify(userOp, null, 2)}`,
-    );
+    const entryPoint = await this.#getEntryPoint(Number(chainId), new ethers.Wallet(decryptedPrivateKey));
 
     // Sign the userOp
     userOp.signature = '0x';
@@ -1056,7 +1045,8 @@ export class AccountAbstractionKeyring implements Keyring {
       chainId.toString(10),
     );
 
-    const signature = await signer.signMessage(ethers.getBytes(userOpHash));
+    const signature = await secureKey.sign(ethers.getBytes(userOpHash));
+    secureKey.destroy();
 
     return signature;
   }
