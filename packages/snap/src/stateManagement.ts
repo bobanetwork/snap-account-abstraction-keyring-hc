@@ -20,8 +20,6 @@ export async function getState(): Promise<KeyringState> {
     params: { operation: 'get' },
   })) as any;
 
-  logger.debug('Retrieved state:', JSON.stringify(state));
-
   return {
     ...defaultState,
     ...state,
