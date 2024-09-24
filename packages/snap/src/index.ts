@@ -35,13 +35,8 @@ async function getKeyring(): Promise<AccountAbstractionKeyring> {
 function hasPermission(origin: string, method: string): boolean {
   let baseUrl: string = origin;
   try {
-    const { protocol, hostname, port } = new URL(origin);
-
-    // Normalize hostname and include port
-    const normalizedHostname = hostname.toLowerCase();
-    baseUrl = port
-      ? `${protocol}//${normalizedHostname}:${port}`
-      : `${protocol}//${normalizedHostname}`;
+    const { protocol, hostname } = new URL(origin);
+    baseUrl = `${protocol}//${hostname}`;
   } catch {
     console.warn('[Snap] Could not extract baseUrl from ', origin);
   }
