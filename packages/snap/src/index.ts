@@ -1,13 +1,11 @@
 import {
-  EthBaseTransaction,
   MethodNotSupportedError,
-  handleKeyringRequest, KeyringRequest
-} from "@metamask/keyring-api";
+  handleKeyringRequest,
+} from '@metamask/keyring-api';
 import type {
   OnKeyringRequestHandler,
   OnRpcRequestHandler,
 } from '@metamask/snaps-sdk';
-import { z } from 'zod';
 
 import { AccountAbstractionKeyring } from './keyring';
 import { logger } from './logger';
@@ -15,8 +13,10 @@ import { InternalMethod, originPermissions } from './permissions';
 import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
-let keyringPromise: Promise<AccountAbstractionKeyring> | null = null;
 
+/**
+ *
+ */
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
@@ -43,71 +43,47 @@ function hasPermission(origin: string, method: string): boolean {
   return originPermissions.get(baseUrl)?.includes(method) ?? false;
 }
 
-// Define a schema for the RPC request object
-const rpcRequestSchema = z.object({
-  origin: z.string().url(),
-  request: z.object({
-    id: z.string(),
-    method: z.string(),
-    params: z.record(z.unknown()), // Allow any key-value pairs, but ensure it's an object
-  }),
-});
-
-type ValidatedRpcRequest = z.infer<typeof rpcRequestSchema>;
-
-function sanitizeParams(params: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(params).map(([key, value]) => [
-      key,
-      typeof value === 'string' ? value.replace(/[<>]/g, '') : value
-    ])
+export const onRpcRequest: OnRpcRequestHandler = async ({
+                                                          origin,
+                                                          request,
+                                                        }) => {
+  logger.debug(
+    `RPC request (origin="${origin}"):`,
+    JSON.stringify(request, undefined, 2),
   );
-}
 
+  // Check if origin is allowed to call method.
+  if (!hasPermission(origin, request.method)) {
+    throw new Error(
+      `Origin '${origin}' is not allowed to call '${request.method}'`,
+    );
+  }
 
-export const onRpcRequest: OnRpcRequestHandler = async (rpcRequest) => {
-  try {
-    const { origin, request } = rpcRequestSchema.parse(rpcRequest);
-
-    logger.debug(`RPC request (origin="${origin}", method="${request.method}")`);
-
-    if (!hasPermission(origin, request.method)) {
-      throw new Error(`Origin '${origin}' is not allowed to call '${request.method}'`);
+  // Handle custom methods.
+  switch (request.method) {
+    case InternalMethod.SendUserOpBoba:
+    case InternalMethod.SendUserOpBobaPM: {
+      const { id, method, params } = request;
+      return (await getKeyring()).submitRequest({
+        id,
+        request: {
+          method,
+          params,
+        },
+      } as any);
     }
 
-    const sanitizedParams = sanitizeParams(request.params);
-
-    // Handle custom methods.
-    switch (request.method) {
-      case InternalMethod.SendUserOpBoba:
-      case InternalMethod.SendUserOpBobaPM: {
-        const keyring = await getKeyring();
-        return keyring.submitRequest({
-          id: request.id,
-          request: {
-            method: request.method,
-            params: sanitizedParams,
-          },
-        } as KeyringRequest);
-      }
-      default: {
-        throw new MethodNotSupportedError(request.method);
-      }
+    default: {
+      throw new MethodNotSupportedError(request.method);
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      logger.error('Invalid RPC request:', error.errors);
-      throw new Error('Invalid RPC request format');
-    }
-    throw error;
   }
 };
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TODO: fix types
 export const onKeyringRequest: OnKeyringRequestHandler = async ({
-  origin,
-  request,
-}) => {
+                                                                  origin,
+                                                                  request,
+                                                                }) => {
   logger.debug(
     `Keyring request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
