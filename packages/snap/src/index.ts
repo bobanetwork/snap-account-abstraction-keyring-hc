@@ -20,7 +20,9 @@ let keyring: AccountAbstractionKeyring;
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
+if(state) {
     keyring = new AccountAbstractionKeyring(state);
+}
   }
   return keyring;
 }
