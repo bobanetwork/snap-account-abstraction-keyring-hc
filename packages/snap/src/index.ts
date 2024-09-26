@@ -1,5 +1,4 @@
 import {
-  EthBaseTransaction,
   MethodNotSupportedError,
   handleKeyringRequest,
 } from '@metamask/keyring-api';
@@ -16,14 +15,14 @@ import { getState } from './stateManagement';
 let keyring: AccountAbstractionKeyring;
 
 /**
- * Return the keyring instance. If it doesn't exist, create it.
+ *
  */
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
-    if (!keyring) {
-      keyring = new AccountAbstractionKeyring(state);
-    }
+if(state) {
+    keyring = new AccountAbstractionKeyring(state);
+}
   }
   return keyring;
 }
@@ -36,21 +35,20 @@ async function getKeyring(): Promise<AccountAbstractionKeyring> {
  * @returns True if the caller is allowed to call the method, false otherwise.
  */
 function hasPermission(origin: string, method: string): boolean {
-  let baseUrl: string = origin
+  let baseUrl: string = origin;
   try {
-    // using baseUrl to e.g. have generic support for other ports, and to ignore query parameters, subpaths, ..
     const { protocol, hostname } = new URL(origin);
     baseUrl = `${protocol}//${hostname}`;
   } catch {
-    console.warn('[Snap] Could not extract baseUrl from ', origin)
+    console.warn('[Snap] Could not extract baseUrl from ', origin);
   }
   return originPermissions.get(baseUrl)?.includes(method) ?? false;
 }
 
 export const onRpcRequest: OnRpcRequestHandler = async ({
-  origin,
-  request,
-}) => {
+                                                          origin,
+                                                          request,
+                                                        }) => {
   logger.debug(
     `RPC request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
@@ -82,13 +80,12 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     }
   }
 };
-
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TODO: fix types
 export const onKeyringRequest: OnKeyringRequestHandler = async ({
-  origin,
-  request,
-}) => {
+                                                                  origin,
+                                                                  request,
+                                                                }) => {
   logger.debug(
     `Keyring request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),

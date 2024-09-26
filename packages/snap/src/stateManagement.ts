@@ -15,17 +15,17 @@ const defaultState: KeyringState = {
  * @returns The current state of the keyring.
  */
 export async function getState(): Promise<KeyringState> {
-  const state = (await snap.request({
-    method: 'snap_manageState',
-    params: { operation: 'get' },
-  })) as any;
-
-  logger.debug('Retrieved state:', JSON.stringify(state));
-
-  return {
-    ...defaultState,
-    ...state,
-  };
+  try {
+    const state = await snap.request({
+      method: 'snap_manageState',
+      params: { operation: 'get' },
+    }) as KeyringState | null;
+    logger.debug('State retrieved successfully.');
+    return { ...defaultState, ...state };
+  } catch (error) {
+    logger.error('Failed to retrieve state:', error);
+    throw new Error('Could not retrieve state.');
+  }
 }
 
 /**
@@ -34,8 +34,14 @@ export async function getState(): Promise<KeyringState> {
  * @param state - New snap state.
  */
 export async function saveState(state: KeyringState) {
-  await snap.request({
-    method: 'snap_manageState',
-    params: { operation: 'update', newState: state },
-  });
+  try {
+    await snap.request({
+      method: 'snap_manageState',
+      params: { operation: 'update', newState: state },
+    });
+    logger.debug('State saved successfully.');
+  } catch (error) {
+    logger.error('Failed to save state:', error);
+    throw new Error('Could not save state.');
+  }
 }
