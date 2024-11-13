@@ -27,23 +27,6 @@ if(state) {
   return keyring;
 }
 
-/**
- * Verify if the caller can call the requested method.
- *
- * @param origin - Caller origin.
- * @param method - Method being called.
- * @returns True if the caller is allowed to call the method, false otherwise.
- */
-function hasPermission(origin: string, method: string): boolean {
-  let baseUrl: string = origin;
-  try {
-    const { protocol, hostname } = new URL(origin);
-    baseUrl = `${protocol}//${hostname}`;
-  } catch {
-    console.warn('[Snap] Could not extract baseUrl from ', origin);
-  }
-  return originPermissions.get(baseUrl)?.includes(method) ?? false;
-}
 
 export const onRpcRequest: OnRpcRequestHandler = async ({
                                                           origin,
