@@ -98,6 +98,7 @@ const Index = () => {
   const [accountObject, setAccountObject] = useState<string | null>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
+  const [saltNumber, setSaltNumber] = useState<number>(0);
 
   const client = new KeyringSnapRpcClient(snapId, window.ethereum);
   const abiCoder = new ethers.AbiCoder();
@@ -191,9 +192,8 @@ const Index = () => {
 
   const createAccountDeterministic = async () => {
     const newAccount = await client.createAccount({
-      saltIndex: counter.toString(),
+      saltIndex: saltNumber.toString(),
     });
-    setCounter(counter + 1);
     await syncAccounts();
     return newAccount;
   };
@@ -571,9 +571,11 @@ const Index = () => {
         {
           id: 'create-account-deterministic',
           title: 'Counter',
-          value: counter.toString(),
+          value: saltNumber,
           type: InputType.TextField,
-          onChange: () => {},
+          onChange: (e: any) => {
+            setSaltNumber(e.target.value)
+          },
         },
       ],
       action: {
