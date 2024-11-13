@@ -54,13 +54,6 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     JSON.stringify(request, undefined, 2),
   );
 
-  // Check if origin is allowed to call method.
-  if (!hasPermission(origin, request.method)) {
-    throw new Error(
-      `Origin '${origin}' is not allowed to call '${request.method}'`,
-    );
-  }
-
   // Handle custom methods.
   switch (request.method) {
     case InternalMethod.SendUserOpBoba:
@@ -90,13 +83,6 @@ export const onKeyringRequest: OnKeyringRequestHandler = async ({
     `Keyring request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
   );
-
-  // Check if origin is allowed to call method.
-  if (!hasPermission(origin, request.method)) {
-    throw new Error(
-      `Origin '${origin}' is not allowed to call '${request.method}'`,
-    );
-  }
 
   // Handle keyring methods.
   return handleKeyringRequest(await getKeyring(), request);
