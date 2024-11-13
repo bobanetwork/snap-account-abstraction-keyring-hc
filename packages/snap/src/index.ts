@@ -9,7 +9,7 @@ import type {
 
 import { AccountAbstractionKeyring } from './keyring';
 import { logger } from './logger';
-import { InternalMethod, originPermissions } from './permissions';
+import { InternalMethod } from './permissions';
 import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
