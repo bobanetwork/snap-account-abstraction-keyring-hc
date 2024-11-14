@@ -172,6 +172,7 @@ const Index = () => {
       ...snapState,
       accounts,
     });
+    setCounter(counter + 1)
   };
 
   const createAccount = async () => {
@@ -192,7 +193,7 @@ const Index = () => {
 
   const createAccountDeterministic = async () => {
     const newAccount = await client.createAccount({
-      saltIndex: saltNumber.toString(),
+      saltIndex: counter.toString(),
     });
     await syncAccounts();
     return newAccount;
@@ -571,11 +572,9 @@ const Index = () => {
         {
           id: 'create-account-deterministic',
           title: 'Counter',
-          value: saltNumber,
+          value: counter.toString(),
           type: InputType.TextField,
-          onChange: (e: any) => {
-            setSaltNumber(e.target.value)
-          },
+          onChange: (e: any) => {},
         },
       ],
       action: {
