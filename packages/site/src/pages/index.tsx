@@ -98,6 +98,7 @@ const Index = () => {
   const [accountObject, setAccountObject] = useState<string | null>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
+  const [saltNumber, setSaltNumber] = useState<number>(0);
 
   const client = new KeyringSnapRpcClient(snapId, window.ethereum);
   const abiCoder = new ethers.AbiCoder();
@@ -171,6 +172,7 @@ const Index = () => {
       ...snapState,
       accounts,
     });
+    setCounter(counter + 1)
   };
 
   const createAccount = async () => {
@@ -193,7 +195,6 @@ const Index = () => {
     const newAccount = await client.createAccount({
       saltIndex: counter.toString(),
     });
-    setCounter(counter + 1);
     await syncAccounts();
     return newAccount;
   };
@@ -573,7 +574,7 @@ const Index = () => {
           title: 'Counter',
           value: counter.toString(),
           type: InputType.TextField,
-          onChange: () => {},
+          onChange: (e: any) => {},
         },
       ],
       action: {
@@ -642,85 +643,6 @@ const Index = () => {
       },
       successMessage: 'Funds transfer successful!',
     },
-    // {
-    //   name: 'Get account',
-    //   description: 'Get data of the selected account',
-    //   inputs: [
-    //     {
-    //       id: 'get-account-account-id',
-    //       title: 'Account ID',
-    //       type: InputType.TextField,
-    //       placeholder: 'E.g. f59a9562-96de-4e75-9229-079e82c7822a',
-    //       options: snapState.accounts.map((account) => {
-    //         return { value: account.address };
-    //       }),
-    //       onChange: (event: any) => setAccountId(event.currentTarget.value),
-    //     },
-    //   ],
-    //   action: {
-    //     disabled: Boolean(accountId),
-    //     callback: async () => await client.getAccount(accountId as string),
-    //     label: 'Get Account',
-    //   },
-    //   successMessage: 'Account fetched',
-    // },
-    // {
-    //   name: 'List accounts',
-    //   description: 'List all account managed by the SSK',
-    //   action: {
-    //     disabled: false,
-    //     callback: async () => {
-    //       const accounts = await client.listAccounts();
-    //       setSnapState({
-    //         ...snapState,
-    //         accounts,
-    //       });
-    //       return accounts;
-    //     },
-    //     label: 'List Accounts',
-    //   },
-    // },
-    // {
-    //   name: 'Remove account',
-    //   description: 'Remove an account',
-    //   inputs: [
-    //     {
-    //       id: 'delete-account-account-id',
-    //       title: 'Account ID',
-    //       type: InputType.TextField,
-    //       placeholder: 'E.g. 394bd587-7be4-4ffb-a113-198c6a7764c2',
-    //       options: snapState.accounts.map((account) => {
-    //         return { value: account.address };
-    //       }),
-    //       onChange: (event: any) => setAccountId(event.currentTarget.value),
-    //     },
-    //   ],
-    //   action: {
-    //     disabled: Boolean(accountId),
-    //     callback: async () => await deleteAccount(),
-    //     label: 'Remove Account',
-    //   },
-    //   successMessage: 'Account Removed',
-    // },
-    // {
-    //   name: 'Update account',
-    //   description: 'Update an account',
-    //   inputs: [
-    //     {
-    //       id: 'update-account-account-object',
-    //       title: 'Account Object',
-    //       type: InputType.TextArea,
-    //       placeholder: 'E.g. { id: ... }',
-    //       onChange: (event: any) => setAccountObject(event.currentTarget.value),
-    //     },
-    //   ],
-    //   action: {
-    //     disabled: Boolean(accountId),
-    //     callback: async () => await updateAccount(),
-    //     label: 'Update Account',
-    //   },
-    //   successMessage: 'Account Updated',
-    // },
   ];
 
   return (
