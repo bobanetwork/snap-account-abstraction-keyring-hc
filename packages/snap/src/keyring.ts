@@ -26,16 +26,17 @@ import {
   copyable,
   DialogType,
   heading,
-  NotificationType,
   panel,
   text,
 } from '@metamask/snaps-sdk';
-import type { CaipChainId, Json, JsonRpcRequest } from '@metamask/utils';
+import type { CaipChainId, Json } from '@metamask/utils';
 import { hexToBytes, parseCaipChainId } from '@metamask/utils';
 import { Buffer } from 'buffer';
 import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
 import { v4 as uuid } from 'uuid';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { z } from 'zod';
 
 import { AA_CONFIG } from './constants/aa-config';
 import { CHAIN_IDS } from './constants/chain-ids';
@@ -43,14 +44,15 @@ import {
   DUMMY_SIGNATURE,
   getDummyPaymasterAndData,
 } from './constants/dummy-values';
+import { encrypt, decrypt } from './encryption';
 import { logger } from './logger';
 import { InternalMethod } from './permissions';
+import { SecurePrivateKey } from './secureKey';
 import { saveState } from './stateManagement';
 import {
   EntryPoint__factory,
   SimpleAccount__factory,
   SimpleAccountFactory__factory,
-  VerifyingPaymaster__factory,
 } from './types';
 import { CaipNamespaces, isEvmChain, toCaipChainId } from './utils/caip';
 import { getUserOperationHash } from './utils/ecdsa';
@@ -62,11 +64,6 @@ import {
   getSignerPrivateKey,
   fetchWithRetry,
 } from './utils/util';
-import { validateConfig } from './utils/validation';
-import { SecurePrivateKey } from './secureKey';
-import { encrypt, decrypt } from './encryption';
-import { z } from 'zod';
-
 
 const unsupportedAAMethods = [
   EthMethod.SignTransaction,
@@ -263,7 +260,9 @@ export class AccountAbstractionKeyring implements Keyring {
       options?.privateKey ??
       (await getSignerPrivateKey(options.saltIndex as number));
 
-    const { secureKey, address: admin } = this.#getKeyPair(privateKeyGen as string);
+    const { secureKey, address: admin } = this.#getKeyPair(
+      privateKeyGen as string,
+    );
 
     if (options?.privateKey) {
       delete options.privateKey;
@@ -284,6 +283,8 @@ export class AccountAbstractionKeyring implements Keyring {
         : (options.salt as string) ??
           ethers.AbiCoder.defaultAbiCoder().encode(['uint256'], [random]);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const aaAddress = await aaFactory['getAddress(address,uint256)'](
       admin,
       salt,
@@ -291,6 +292,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
     if (!isUniqueAddress(aaAddress, Object.values(this.#state.wallets))) {
       throw new Error(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `[Snap] Account abstraction address already in use: ${aaAddress}`,
       );
     }
@@ -318,7 +320,7 @@ export class AccountAbstractionKeyring implements Keyring {
       this.#state.wallets[account.id] = {
         account,
         admin,
-        encryptedPrivateKey: encryptedPrivateKey,
+        encryptedPrivateKey,
         chains: {
           [toCaipChainId(CaipNamespaces.Eip155, chainId.toString())]: false,
         },
@@ -413,7 +415,11 @@ export class AccountAbstractionKeyring implements Keyring {
       const { method, params = [] } = validatedRequest.request;
       const { scope } = (params[0] as Record<string, unknown>) || {};
 
-      console.log(`handling goes here`, scope, JSON.stringify(validatedRequest));
+      console.log(
+        `handling goes here`,
+        scope,
+        JSON.stringify(validatedRequest),
+      );
 
       const signature = await this.#handleSigningRequest({
         account: this.#getWalletById(validatedRequest.id).account,
@@ -428,7 +434,7 @@ export class AccountAbstractionKeyring implements Keyring {
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error("Input validation failed:", error.errors);
+        console.error('Input validation failed:', error.errors);
       }
       throw error; // Re-throw the error for higher-level error handling
     }
@@ -512,12 +518,8 @@ export class AccountAbstractionKeyring implements Keyring {
       throwError(`[Snap] Account does not support chain: ${scope}`);
     }
 
-    /** @dev params is always an array, payload can be an array, or single tx */
+    // params is always an array, payload can be an array, or single tx
     const payload = (params as any)[0]?.payload;
-    /**
-     * @param params
-     * @dev Allow people to pass transactions as single object (as we do in examples rn) but also as array as intended
-     */
     const mapParamsToTransactions = (): EthBaseTransaction[] => {
       if (Array.isArray(payload)) {
         return payload as EthBaseTransaction[];
@@ -525,7 +527,7 @@ export class AccountAbstractionKeyring implements Keyring {
       return [payload as EthBaseTransaction];
     };
 
-    /** @dev Allow developers to override certain params for debugging purposes. */
+    // Allow developers to override certain params for debugging purposes.
     const overrides: UserOpOverrides | undefined =
       payload?.overrides as UserOpOverrides; // TODO: We might want to use that object for the other RPC calls too
 
@@ -801,6 +803,8 @@ export class AccountAbstractionKeyring implements Keyring {
       method: 'snap_dialog',
       params: {
         type: DialogType.Confirmation,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         content: panel([
           heading('Transaction Confirmation'),
           text('Please review the following transaction details:'),
@@ -844,13 +848,16 @@ export class AccountAbstractionKeyring implements Keyring {
     console.log(bundlerRes);
     if (!bundlerRes.result) {
       console.log(bundlerRes.error);
-      throw new Error(`UserOp Failed ${bundlerRes.error.message}`);
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`UserOp Failed:${bundlerRes.error.message}`);
     }
 
     (await snap.request({
       method: 'snap_dialog',
       params: {
         type: DialogType.Alert,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         content: panel([
           heading('Transaction Success!'),
           text(`UserOP has been send to bundler: ${userOpHash} (UserOp Hash)`),
@@ -937,7 +944,11 @@ export class AccountAbstractionKeyring implements Keyring {
     return ethBaseUserOp;
   }
 
-  async #sendUserOperation(userOp:any, entryPointAddress: string, bundlerUrl: string) {
+  async #sendUserOperation(
+    userOp: any,
+    entryPointAddress: string,
+    bundlerUrl: string,
+  ) {
     const requestBody = {
       method: 'eth_sendUserOperation',
       id: 1,
@@ -963,8 +974,8 @@ export class AccountAbstractionKeyring implements Keyring {
   }
 
   async #estimateUserOpGas(
-    userOp:any,
-    entryPointAddress:any,
+    userOp: any,
+    entryPointAddress: any,
     bundlerUrl: string,
   ): Promise<IUserOpGasEstimate> {
     const requestBody = {
@@ -1054,13 +1065,16 @@ export class AccountAbstractionKeyring implements Keyring {
   async #signUserOperation(
     address: string,
     userOp: EthUserOperation,
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const wallet = this.#getWalletByAddress(address);
     const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
     const secureKey = new SecurePrivateKey(decryptedPrivateKey);
 
     const { chainId } = await provider.getNetwork();
-    const entryPoint = await this.#getEntryPoint(Number(chainId), new ethers.Wallet(decryptedPrivateKey));
+    const entryPoint = await this.#getEntryPoint(
+      Number(chainId),
+      new ethers.Wallet(decryptedPrivateKey),
+    );
 
     // Sign the userOp
     userOp.signature = '0x';

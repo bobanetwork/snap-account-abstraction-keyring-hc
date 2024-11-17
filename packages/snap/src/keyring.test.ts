@@ -1,12 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable n/no-process-env */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { stripHexPrefix } from '@ethereumjs/util';
 import type {
   EthBaseUserOperation,
   EthUserOperation,
   KeyringAccount,
-  KeyringRequest,
 } from '@metamask/keyring-api';
 import { EthMethod } from '@metamask/keyring-api';
 import type { Signer } from 'ethers';
@@ -14,13 +12,9 @@ import { ethers } from 'hardhat';
 import * as jestExtended from 'jest-extended';
 import { v4 } from 'uuid';
 
-import {
-  DUMMY_SIGNATURE,
-  getDummyPaymasterAndData,
-} from './constants/dummy-values';
+import { getDummyPaymasterAndData } from './constants/dummy-values';
 import type { ChainConfig, KeyringState } from './keyring';
 import { AccountAbstractionKeyring } from './keyring';
-import { InternalMethod } from './permissions';
 import * as stateManagement from './stateManagement';
 import type {
   EntryPoint,
@@ -91,7 +85,7 @@ describe('Keyring', () => {
   let aaOwner: Signer;
   let aaOwnerSk: string;
   let keyring: AccountAbstractionKeyring;
-  let simpleAccountFactory: SimpleAccountFactory;
+  let simpleAccountFactory: SimpleAccountFactory | any;
   let entryPoint: EntryPoint;
   let verifyingPaymaster: VerifyingPaymaster;
 
@@ -132,6 +126,7 @@ describe('Keyring', () => {
   });
 
   describe('Set Config', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let config: ChainConfig;
 
     beforeEach(async () => {
@@ -140,53 +135,8 @@ describe('Keyring', () => {
         simpleAccountFactory: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
         entryPoint: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         bundlerUrl: 'https://bundler.example.com/rpc',
-        // customVerifyingPaymasterSK: aaOwnerSk,
-        // customVerifyingPaymasterAddress:
-        //   '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
       };
     });
-
-    // const testCases = [
-    //   {
-    //     field: 'simpleAccountFactory',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Simple Account Factory Address',
-    //   },
-    //   {
-    //     field: 'entryPoint',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Entry Point Address',
-    //   },
-    //   {
-    //     field: 'customVerifyingPaymasterAddress',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Custom Verifying Paymaster Address',
-    //   },
-    //   {
-    //     field: 'bundlerUrl',
-    //     value: 'ftp:/invalid.fake.io',
-    //     errorMessage: 'Invalid Bundler URL',
-    //   },
-    //   {
-    //     field: 'customVerifyingPaymasterSK',
-    //     value: '123NotAPrivateKey456',
-    //     errorMessage: 'Invalid Custom Verifying Paymaster Secret Key',
-    //   },
-    // ];
-
-    // testCases.forEach(({ field, value, errorMessage }) => {
-    //   it(`should not set the config with an invalid ${field}`, async () => {
-    //     const invalidConfig = { ...config, [field]: value };
-    //     await expect(keyring.setConfig(invalidConfig)).rejects.toThrow(
-    //       `[Snap] ${errorMessage}: ${value}`,
-    //     );
-    //   });
-    // });
-
-    // it('should set the config', async () => {
-    //   const keyringConfig = await keyring.setConfig(config);
-    //   expect(keyringConfig).toStrictEqual(config);
-    // });
   });
 
   describe('Create Account', () => {
@@ -227,7 +177,7 @@ describe('Keyring', () => {
 
     it('should not create an account already in use', async () => {
       const salt = '0x123';
-      const expectedAddressFromSalt =
+      const expectedAddressFromSalt: string =
         await simpleAccountFactory.getAccountAddress(
           await aaOwner.getAddress(),
           salt,

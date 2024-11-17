@@ -14,24 +14,21 @@ import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
 
-/**
- *
- */
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
-if(state) {
-    keyring = new AccountAbstractionKeyring(state);
-}
+    if (state) {
+      // eslint-disable-next-line require-atomic-updates
+      keyring = new AccountAbstractionKeyring(state);
+    }
   }
   return keyring;
 }
 
-
 export const onRpcRequest: OnRpcRequestHandler = async ({
-                                                          origin,
-                                                          request,
-                                                        }) => {
+  origin,
+  request,
+}) => {
   logger.debug(
     `RPC request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
@@ -59,9 +56,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TODO: fix types
 export const onKeyringRequest: OnKeyringRequestHandler = async ({
-                                                                  origin,
-                                                                  request,
-                                                                }) => {
+  origin,
+  request,
+}) => {
   logger.debug(
     `Keyring request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),

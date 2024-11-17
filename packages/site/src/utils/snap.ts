@@ -1,7 +1,7 @@
 import snapPackageInfo from '../../../snap/package.json';
 import { defaultSnapOrigin } from '../config';
+import { isLocal } from '../config/snap';
 import type { GetSnapsResponse, Snap } from '../types';
-import {isLocal} from "../config/snap";
 
 /**
  * Get the installed snaps in MetaMask.

@@ -32,6 +32,7 @@ module.exports = {
   rules: {
     // This is necessary to run eslint on Windows and not get a thousand CRLF errors
     'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    'jsdoc/require-jsdoc': 'off',
   },
 
   ignorePatterns: [

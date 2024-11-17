@@ -108,19 +108,21 @@ export const getSignerPrivateKey = async (index: number) => {
         },
       }),
     );
-  } catch (e) {
+  } catch (error: any) {
     throw new Error(`Failed to get signer private key for index ${index}`);
   }
 };
 
-
-interface FetchWrapperOptions extends RequestInit {
+type FetchWrapperOptions = {
   timeout?: number;
   retries?: number;
   backoffFactor?: number;
-}
+} & RequestInit;
 
-export const fetchWithRetry = async (url: string, options: FetchWrapperOptions = {}): Promise<Response> => {
+export const fetchWithRetry = async (
+  url: string,
+  options: FetchWrapperOptions = {},
+): Promise<Response> => {
   const {
     timeout = 10000,
     retries = 3,
@@ -147,12 +149,13 @@ export const fetchWithRetry = async (url: string, options: FetchWrapperOptions =
       }
 
       return response;
-
     } catch (error: any) {
       lastError = error;
 
       if (error.name === 'AbortError') {
-        console.warn(`Request timed out (attempt ${attempt + 1} of ${retries})`);
+        console.warn(
+          `Request timed out (attempt ${attempt + 1} of ${retries})`,
+        );
       } else {
         console.error(`Error (attempt ${attempt + 1} of ${retries}):`, error);
       }
@@ -161,9 +164,11 @@ export const fetchWithRetry = async (url: string, options: FetchWrapperOptions =
         break;
       }
 
-      await new Promise(resolve => setTimeout(resolve, Math.pow(backoffFactor, attempt) * 1000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.pow(backoffFactor, attempt) * 1000),
+      );
     }
   }
 
   throw lastError;
-}
+};

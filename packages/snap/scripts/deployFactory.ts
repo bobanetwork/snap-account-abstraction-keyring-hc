@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { ethers } from 'hardhat';
+// eslint-disable-next-line import/no-unassigned-import
 import 'dotenv/config';
 
 import { SimpleAccountFactory__factory } from '../src/types';
@@ -15,7 +16,8 @@ async function main() {
 
   const contract = await SimpleAccountFactory.deploy(
     // use local entrypoint when deployed (assuming network local), otherwise sepolia
-    process.env.LOCAL_ENTRYPOINT ?? '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+    process.env.LOCAL_ENTRYPOINT ??
+      '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   );
 
   console.log('SimpleAccountFactory deployed to:', contract.target);

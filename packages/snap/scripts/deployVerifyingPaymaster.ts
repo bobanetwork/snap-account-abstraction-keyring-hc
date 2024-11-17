@@ -3,6 +3,7 @@
 import { ethers } from 'hardhat';
 
 import { VerifyingPaymaster__factory } from '../src/types';
+// eslint-disable-next-line import/no-unassigned-import
 import 'dotenv/config';
 
 /**
@@ -15,7 +16,8 @@ async function main() {
 
   const contract = await VerifyingPaymasterFactory.deploy(
     // use local entrypoint when deployed (assuming network local), otherwise sepolia
-    process.env.LOCAL_ENTRYPOINT ?? '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+    process.env.LOCAL_ENTRYPOINT ??
+      '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
     deployer!.address,
   );
 

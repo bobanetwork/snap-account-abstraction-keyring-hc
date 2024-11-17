@@ -91,17 +91,27 @@ export const Header = () => {
         </div>
         <div>
           <b>Snap V: </b>
-          <span style={{
-            "backgroundColor": "#4CAF50",
-            "color": "white", "padding": '5px',
-            "borderRadius": "5px"
-          }}>Expected: {snapPackageInfo.version}</span> |
           <span
             style={{
-              "backgroundColor": "#4CAF50",
-              "color": "white", "padding": '5px',
-              "borderRadius": "5px"
-            }}>Installed: {state.installedSnap?.version}</span>
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              padding: '5px',
+              borderRadius: '5px',
+            }}
+          >
+            Expected: {snapPackageInfo.version}
+          </span>{' '}
+          |
+          <span
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              padding: '5px',
+              borderRadius: '5px',
+            }}
+          >
+            Installed: {state.installedSnap?.version}
+          </span>
         </div>
 
         {defaultSnapOrigin.startsWith('local') && `(from ${defaultSnapOrigin})`}
