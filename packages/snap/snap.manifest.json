@@ -24,7 +24,8 @@
         "https://staging.gateway.boba.network",
         "https://gateway.boba.network",
         "https://hc-wallet.sepolia.boba.network",
-        "https://aa-hc-example-fe.onrender.com/"
+        "https://aa-hc-example-fe.onrender.com/",
+        "https://boba-blockchain-busters-frontend.onrender.com"
       ]
     },
     "endowment:rpc": {
