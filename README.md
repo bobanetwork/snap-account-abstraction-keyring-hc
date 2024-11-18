@@ -1,14 +1,9 @@
 # Simple Account Abstraction Snap
 
-This repository contains a simple example of an account abstraction keyring snap.
+This repository contains the official Account Abstraction - Hybrid Compute snap.
 
-Keyring snaps enable developers to enhance MetaMask by adding new account
-types. These accounts are natively supported within the extension, appearing in
-MetaMask's UI, and can be used with dapps.
-
-MetaMask Snaps is a system that allows anyone to safely expand the capabilities
-of MetaMask. A _snap_ is a program that we run in an isolated environment that
-can customize the wallet experience.
+## Audit
+The snap has been audited by Sayfer, [report](https://sayfer.io/audits/metamask-snap-audit-report-for-enya-labs/)
 
 ## Snaps is pre-release software
 
