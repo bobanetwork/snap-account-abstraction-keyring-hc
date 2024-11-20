@@ -2,34 +2,32 @@
 
 This repository contains the official Account Abstraction - Hybrid Compute snap.
 
-[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. This enables you to engage with GenAI or any other off-chain data you can imagine. Leverage Hybrid Compute to increase the power and interoperability of your MetaMask.
+[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. This enables you to engage with GenAI or any other off-chain data. Leverage Hybrid Compute to increase the power and interoperability of your MetaMask.
 
 Unlock the power of real-world data for Web3 with Hybrid Compute; a single line of code is all it takes.
 
-## Audit
-The snap has been audited by Sayfer. You can find the report [here](https://sayfer.io/audits/metamask-snap-audit-report-for-enya-labs/).
+## Install the Snap
 
-## Prerequisites
+To install the snap, follow [this link](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead.
 
-Snaps is pre-release software. To interact with (your) Snaps, install:
+## Recover your Wallet Address
+
+<TODO: STILL NEED TO ADD SOMETHING ABOUT A NEW PASSPHRASE OR WHATEVER IF YOU GET ONE>
+
+Account Abstraction authenticates your transactions with ECDSA private keys (as well as lowering your costs by bundling your transactions).
+
+## Run the Snap Locally
+
+### Prerequisites
+
+Snaps is pre-release software. To interact with your Snaps, install:
 - [MetaMask Flask](https://metamask.io/flask/), a canary distribution for developers that provides access to upcoming features
 - `yarn`
 - `npm`
 
-## Cloning
+### Get Started
 
-Clone the template-snap repository [using this template](https://github.com/MetaMask/template-snap-monorepo/generate) and set up your development environment.
-
-If you clone or create this repository outside the MetaMask GitHub organization, consider running `./scripts/cleanup.sh` to remove some
-files that will not work properly outside the MetaMask GitHub organization.
-
-This repository contains GitHub Actions that you may find useful. See `.github/workflows` and [Releasing & Publishing](https://github.com/MetaMask/template-snap-monorepo/edit/main/README.md#releasing--publishing) below for more information.
-
-Note that the `action-publish-release.yml` workflow contains a step that publishes the frontend of this snap (contained in the `public/` directory) to GitHub pages. If you do not want to publish the frontend to GitHub pages, simply remove the step named "Publish to GitHub Pages" in that workflow.
-
-If you don't wish to use any of the existing GitHub actions in this repository, simply delete the `.github/workflows` directory.
-
-## Getting Started
+First, clone the [snap repo](https://github.com/bobanetwork/snap-account-abstraction-keyring-hc).
 
 Install the snap:
 
@@ -50,8 +48,7 @@ Start the application:
 cd <name-of-your-repo-root-dir>
 yarn start
 ```
-
-## Contributing
+## Contribute
 
 ### Testing and Linting
 
@@ -59,7 +56,7 @@ Run `yarn test` to run the tests once.
 
 Run `yarn lint` to run the linter, or run `yarn lint:fix` to run the linter and fix any automatically fixable issues.
 
-### Releasing & Publishing
+### Release & Publish
 
 The project follows the same release process as the other libraries in the MetaMask organization. The GitHub Actions [`action-create-release-pr`](https://github.com/MetaMask/action-create-release-pr) and [`action-publish-release`](https://github.com/MetaMask/action-publish-release) are used to automate the release process; see those repositories for more information about how they work.
 
@@ -107,3 +104,7 @@ The project follows the same release process as the other libraries in the MetaM
 ## Notes
 
 - We use [Babel](https://babeljs.io/) for transpiling `TypeScript` to `JavaScript`. Therefore, when building with the CLI, `transpilationMode` must be set to `localOnly` (default) or `localAndDeps`.
+
+## Audit
+
+The snap has been audited by Sayfer. You can find the report [here](https://sayfer.io/audits/metamask-snap-audit-report-for-enya-labs/).
