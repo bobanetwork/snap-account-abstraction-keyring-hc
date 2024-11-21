@@ -8,7 +8,7 @@ Unlock the power of real-world data for Web3 with the Account Abstraction - Hybr
 
 ## Install the Snap
 
-To install the snap, follow [this link](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead. If you choose that option, *please* ensure you back up and save your private key.
+To install the snap, follow [this link (only Boba Sepolia as of 21 Nov 2024)](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead. If you choose that option, *please* ensure you back up and save your private key.
 
 ### Recover your Wallet Address
 
