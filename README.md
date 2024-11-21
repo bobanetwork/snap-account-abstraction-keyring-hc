@@ -2,7 +2,7 @@
 
 This repository contains the official Account Abstraction - Hybrid Compute snap.
 
-[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. Account Abstraction authenticates your transactions with ECDSA private keys (as well as lowering your costs by bundling your transactions). Hybrid Compute enables you to engage with GenAI or any other off-chain data, increasing the power and interoperability of your MetaMask.
+[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. Account Abstraction authenticates your transactions with ECDSA private keys (as well as lowering your costs by bundling your transactions). Hybrid Compute enables you to engage with GenAI or any other off-chain data, increasing the power and interoperability of your smart contracts.
 
 Unlock the power of real-world data for Web3 with the Account Abstraction - Hybrid Compute snap; a single line of code is all it takes.
 
