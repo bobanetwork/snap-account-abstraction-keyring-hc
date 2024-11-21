@@ -2,19 +2,17 @@
 
 This repository contains the official Account Abstraction - Hybrid Compute snap.
 
-[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. This enables you to engage with GenAI or any other off-chain data. Leverage Hybrid Compute to increase the power and interoperability of your MetaMask.
+[Hybrid Compute](https://docs.boba.network/hc) utilizes [Account Abstraction](https://docs.boba.network/developer/features/aa-basics) on Boba Network to engage with off-chain APIs seamlessly. Account Abstraction authenticates your transactions with ECDSA private keys (as well as lowering your costs by bundling your transactions). Hybrid Compute enables you to engage with GenAI or any other off-chain data, increasing the power and interoperability of your MetaMask.
 
-Unlock the power of real-world data for Web3 with Hybrid Compute; a single line of code is all it takes.
+Unlock the power of real-world data for Web3 with the Account Abstraction - Hybrid Compute snap; a single line of code is all it takes.
 
 ## Install the Snap
 
-To install the snap, follow [this link](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead.
+To install the snap, follow [this link](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead. If you choose that option, *please* ensure you back up and save your private key.
 
-## Recover your Wallet Address
+### Recover your Wallet Address
 
-<TODO: STILL NEED TO ADD SOMETHING ABOUT A NEW PASSPHRASE OR WHATEVER IF YOU GET ONE>
-
-Account Abstraction authenticates your transactions with ECDSA private keys (as well as lowering your costs by bundling your transactions).
+If you created your new wallet deterministically, you can recover your account in the same way as your MetaMask with the same pass phrase. If you created your the wallet with your own private key, you will need access to the private key you created it with.
 
 ## Run the Snap Locally
 
@@ -27,9 +25,9 @@ Snaps is pre-release software. To interact with your Snaps, install:
 
 ### Get Started
 
-First, clone the [snap repo](https://github.com/bobanetwork/snap-account-abstraction-keyring-hc).
+First, clone this repository locally.
 
-Install the snap:
+Next, install the snap:
 
 ```shell
 cd <name-of-your-repo-root-dir>
@@ -103,7 +101,7 @@ The project follows the same release process as the other libraries in the MetaM
 
 ## Notes
 
-- We use [Babel](https://babeljs.io/) for transpiling `TypeScript` to `JavaScript`. Therefore, when building with the CLI, `transpilationMode` must be set to `localOnly` (default) or `localAndDeps`.
+We use [Babel](https://babeljs.io/) for transpiling `TypeScript` to `JavaScript`. Therefore, when building with the CLI, `transpilationMode` must be set to `localOnly` (default) or `localAndDeps`.
 
 ## Audit
 
