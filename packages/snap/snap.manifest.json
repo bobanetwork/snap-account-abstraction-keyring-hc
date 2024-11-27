@@ -26,7 +26,7 @@
         "https://hc-wallet.sepolia.boba.network",
         "https://aa-hc-example-fe.onrender.com/",
         "https://boba-blockchain-busters-frontend.onrender.com",
-        "https://presibot.onrender.com/"
+        "https://presibot.onrender.com"
       ]
     },
     "endowment:rpc": {
