@@ -1,12 +1,12 @@
 {
   "name": "@bobanetwork/snap-account-abstraction-keyring-site",
-  "version": "1.1.8",
+  "version": "1.1.11",
   "private": true,
   "license": "(MIT-0 OR Apache-2.0)",
   "scripts": {
     "build": "rimraf .cache && cross-env GATSBY_TELEMETRY_DISABLED=1 gatsby build --prefix-paths",
     "clean": "rimraf public .cache",
-    "deploy": "aws --profile boba s3 rm s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh --recursive && aws --profile boba s3 sync public s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh && aws --p\nrofile boba s3 cp s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh/index.html s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh/index.html --metadata-directive REPLACE --cache-control max-age=0 --content-type text/html",
+    "deploy": "aws --profile boba s3 rm s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh --recursive && aws --profile boba s3 sync public s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh && aws --profile boba s3 cp s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh/index.html s3://hc-wallet-cdn-hcwalletbucket-dgpgv35q4qwh/index.html --metadata-directive REPLACE --cache-control max-age=0 --content-type text/html",
     "lint": "yarn lint:eslint && yarn lint:misc && yarn lint:deps && yarn lint:types && yarn lint:changelog",
     "lint:deps": "depcheck",
     "lint:eslint": "eslint . --cache --ext js,jsx,ts,tsx",
