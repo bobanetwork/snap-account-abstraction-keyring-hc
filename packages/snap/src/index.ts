@@ -9,7 +9,7 @@ import type {
 
 import { AccountAbstractionKeyring } from './keyring';
 import { logger } from './logger';
-import { InternalMethod } from './permissions';
+import { InternalMethod, originPermissions } from './permissions';
 import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
@@ -20,22 +20,46 @@ let keyring: AccountAbstractionKeyring;
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
-if(state) {
-    keyring = new AccountAbstractionKeyring(state);
-}
+    if (state) {
+      keyring = new AccountAbstractionKeyring(state);
+    }
   }
   return keyring;
 }
 
+/**
+ * Verify if the caller can call the requested method.
+ *
+ * @param origin - Caller origin.
+ * @param method - Method being called.
+ * @returns True if the caller is allowed to call the method, false otherwise.
+ */
+function hasPermission(origin: string, method: string): boolean {
+  let baseUrl: string = origin;
+  try {
+    const { protocol, hostname } = new URL(origin);
+    baseUrl = `${protocol}//${hostname}`;
+  } catch {
+    console.warn('[Snap] Could not extract baseUrl from ', origin);
+  }
+  return originPermissions.get(baseUrl)?.includes(method) ?? false;
+}
 
 export const onRpcRequest: OnRpcRequestHandler = async ({
-                                                          origin,
-                                                          request,
-                                                        }) => {
+  origin,
+  request,
+}) => {
   logger.debug(
     `RPC request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
   );
+
+  // Check if origin is allowed to call method.
+  if (!hasPermission(origin, request.method)) {
+    throw new Error(
+      `Origin '${origin}' is not allowed to call '${request.method}'`,
+    );
+  }
 
   // Handle custom methods.
   switch (request.method) {
@@ -59,13 +83,20 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TODO: fix types
 export const onKeyringRequest: OnKeyringRequestHandler = async ({
-                                                                  origin,
-                                                                  request,
-                                                                }) => {
+  origin,
+  request,
+}) => {
   logger.debug(
     `Keyring request (origin="${origin}"):`,
     JSON.stringify(request, undefined, 2),
   );
+
+  // Check if origin is allowed to call method.
+  if (!hasPermission(origin, request.method)) {
+    throw new Error(
+      `Origin '${origin}' is not allowed to call '${request.method}'`,
+    );
+  }
 
   // Handle keyring methods.
   return handleKeyringRequest(await getKeyring(), request);
