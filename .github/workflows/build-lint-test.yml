@@ -101,7 +101,7 @@ jobs:
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@latest
       - name: Run e2e tests
-        run: yarn workspace @bobanetwork/snap-account-abstraction-keyring run test
+        run: yarn workspace @bobanetwork/snap-account-abstraction-keyring-monorepo run test
       - name: Require clean working directory
         shell: bash
         run: |
