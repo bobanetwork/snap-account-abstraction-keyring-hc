@@ -98,8 +98,8 @@ jobs:
           path: ./packages/snap/dist
           key: snap-${{ runner.os }}-${{ github.sha }}
       - run: yarn install --immutable
-      - name: Install Google Chrome
-        run: yarn install-chrome
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
       - name: Run e2e tests
         run: yarn workspace @bobanetwork/snap-account-abstraction-keyring run test
       - name: Require clean working directory
