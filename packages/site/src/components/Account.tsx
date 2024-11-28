@@ -34,8 +34,7 @@ export const Account = ({
       <AccountTitleContainer onClick={() => setIsCollapsed(!isCollapsed)}>
         <AccountTitle>
           Account {count + 1}
-          {currentAccount &&
-          currentAccount?.address &&
+          {currentAccount?.address &&
           currentAccount?.address?.toLowerCase() ===
             account.address.toLowerCase() ? (
             <StyledIcon>

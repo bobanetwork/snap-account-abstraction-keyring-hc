@@ -5,10 +5,10 @@ const ENCRYPTION_KEY_NAME = 'encryptionKey';
 type SnapState = Record<string, unknown>;
 
 async function getOrCreateEncryptionKey(): Promise<Buffer> {
-  const state = await snap.request({
+  const state = (await snap.request({
     method: 'snap_manageState',
     params: { operation: 'get' },
-  }) as SnapState | null;
+  })) as SnapState | null;
 
   if (state && typeof state[ENCRYPTION_KEY_NAME] === 'string') {
     return Buffer.from(state[ENCRYPTION_KEY_NAME], 'hex');
@@ -19,7 +19,7 @@ async function getOrCreateEncryptionKey(): Promise<Buffer> {
     method: 'snap_manageState',
     params: {
       operation: 'update',
-      newState: { [ENCRYPTION_KEY_NAME]: newKey.toString('hex') }
+      newState: { [ENCRYPTION_KEY_NAME]: newKey.toString('hex') },
     },
   });
 
@@ -32,13 +32,13 @@ export async function encrypt(text: string): Promise<string> {
   const cipher = createCipheriv('aes-256-cbc', key, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+  return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
 export async function decrypt(text: string): Promise<string> {
   const key = await getOrCreateEncryptionKey();
   const textParts = text.split(':');
-  const iv = Buffer.from(textParts.shift() || '', 'hex');
+  const iv = Buffer.from(textParts.shift() ?? '', 'hex');
   const encryptedText = Buffer.from(textParts.join(':'), 'hex');
   const decipher = createDecipheriv('aes-256-cbc', key, iv);
   let decrypted = decipher.update(encryptedText);

@@ -32,7 +32,6 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@metamask/keyring-api": "^5.0.0",
-    "@metamask/providers": "^16.0.0",
     "@mui/icons-material": "^5.14.0",
     "@mui/material": "^5.14.0",
     "@types/react-helmet": "^6.1.6",
@@ -80,5 +79,8 @@
   },
   "engines": {
     "node": ">=18.6.0"
+  },
+  "resolutions": {
+    "@metamask/providers": "16.0.0"
   }
 }

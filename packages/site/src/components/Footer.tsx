@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 
 import Logo from '../assets/boba-logo.png';
 
@@ -27,15 +27,7 @@ const PoweredByButton = styled.a`
   background-color: ${({ theme }) => theme.colors.background?.alternative};
 `;
 
-const PoweredByContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 1rem;
-`;
-
 export const Footer = () => {
-  const theme = useTheme();
-
   return (
     <FooterWrapper>
       <PoweredByButton href="https://docs.metamask.io/" target="_blank">

@@ -1,12 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable n/no-process-env */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { stripHexPrefix } from '@ethereumjs/util';
 import type {
   EthBaseUserOperation,
   EthUserOperation,
   KeyringAccount,
-  KeyringRequest,
 } from '@metamask/keyring-api';
 import { EthMethod } from '@metamask/keyring-api';
 import type { Signer } from 'ethers';
@@ -14,13 +12,9 @@ import { ethers } from 'hardhat';
 import * as jestExtended from 'jest-extended';
 import { v4 } from 'uuid';
 
-import {
-  DUMMY_SIGNATURE,
-  getDummyPaymasterAndData,
-} from './constants/dummy-values';
+import { getDummyPaymasterAndData } from './constants/dummy-values';
 import type { ChainConfig, KeyringState } from './keyring';
 import { AccountAbstractionKeyring } from './keyring';
-import { InternalMethod } from './permissions';
 import * as stateManagement from './stateManagement';
 import type {
   EntryPoint,
@@ -91,7 +85,7 @@ describe('Keyring', () => {
   let aaOwner: Signer;
   let aaOwnerSk: string;
   let keyring: AccountAbstractionKeyring;
-  let simpleAccountFactory: SimpleAccountFactory;
+  let simpleAccountFactory: SimpleAccountFactory | any;
   let entryPoint: EntryPoint;
   let verifyingPaymaster: VerifyingPaymaster;
 
@@ -132,6 +126,7 @@ describe('Keyring', () => {
   });
 
   describe('Set Config', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let config: ChainConfig;
 
     beforeEach(async () => {
@@ -140,53 +135,8 @@ describe('Keyring', () => {
         simpleAccountFactory: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
         entryPoint: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         bundlerUrl: 'https://bundler.example.com/rpc',
-        // customVerifyingPaymasterSK: aaOwnerSk,
-        // customVerifyingPaymasterAddress:
-        //   '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
       };
     });
-
-    // const testCases = [
-    //   {
-    //     field: 'simpleAccountFactory',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Simple Account Factory Address',
-    //   },
-    //   {
-    //     field: 'entryPoint',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Entry Point Address',
-    //   },
-    //   {
-    //     field: 'customVerifyingPaymasterAddress',
-    //     value: '0xNotAnAddress',
-    //     errorMessage: 'Invalid Custom Verifying Paymaster Address',
-    //   },
-    //   {
-    //     field: 'bundlerUrl',
-    //     value: 'ftp:/invalid.fake.io',
-    //     errorMessage: 'Invalid Bundler URL',
-    //   },
-    //   {
-    //     field: 'customVerifyingPaymasterSK',
-    //     value: '123NotAPrivateKey456',
-    //     errorMessage: 'Invalid Custom Verifying Paymaster Secret Key',
-    //   },
-    // ];
-
-    // testCases.forEach(({ field, value, errorMessage }) => {
-    //   it(`should not set the config with an invalid ${field}`, async () => {
-    //     const invalidConfig = { ...config, [field]: value };
-    //     await expect(keyring.setConfig(invalidConfig)).rejects.toThrow(
-    //       `[Snap] ${errorMessage}: ${value}`,
-    //     );
-    //   });
-    // });
-
-    // it('should set the config', async () => {
-    //   const keyringConfig = await keyring.setConfig(config);
-    //   expect(keyringConfig).toStrictEqual(config);
-    // });
   });
 
   describe('Create Account', () => {
@@ -227,7 +177,7 @@ describe('Keyring', () => {
 
     it('should not create an account already in use', async () => {
       const salt = '0x123';
-      const expectedAddressFromSalt =
+      const expectedAddressFromSalt: string =
         await simpleAccountFactory.getAccountAddress(
           await aaOwner.getAddress(),
           salt,
@@ -548,113 +498,6 @@ describe('Keyring', () => {
       });
     });
 
-    // describe('#patchUserOperation', () => {
-    //   it('should return a valid paymasterAndData', async () => {
-    //     const userOperation: EthUserOperation = {
-    //       sender: aaAccount.address,
-    //       nonce: '0x00',
-    //       initCode: '0x',
-    //       callData:
-    //         '0xb61d27f600000000000000000000000097a0924bf222499cba5c29ea746e82f2307302930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000',
-    //       signature: DUMMY_SIGNATURE,
-    //       paymasterAndData: '0x',
-    //       callGasLimit: '0x58a83',
-    //       verificationGasLimit: '0xe8c4',
-    //       preVerificationGas: '0xc57c',
-    //       maxFeePerGas: '0x11',
-    //       maxPriorityFeePerGas: '0x11',
-    //     };
-
-    //     const operation = (await keyring.submitRequest({
-    //       id: 'ef70fc30-93a8-4bb0-b8c7-9d3e7732372b',
-    //       scope,
-    //       account: mockAccountId,
-    //       request: {
-    //         method: 'eth_patchUserOperation',
-    //         params: [userOperation],
-    //       },
-    //     })) as { pending: false; result: { paymasterAndData: string } };
-
-    //     const localVerifying = VerifyingPaymaster__factory.connect(
-    //       await verifyingPaymaster.getAddress(),
-    //       ethers.provider,
-    //     );
-
-    //     const hash = await localVerifying.getHash(userOperation, 0, 0);
-    //     const expectedSignature = await aaOwner.signMessage(
-    //       ethers.getBytes(hash),
-    //     );
-    //     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    //     const expectedPaymasterAndData = `${await verifyingPaymaster.getAddress()}${stripHexPrefix(
-    //       ethers.AbiCoder.defaultAbiCoder().encode(
-    //         ['uint48', 'uint48'],
-    //         [0, 0],
-    //       ),
-    //     )}${stripHexPrefix(expectedSignature)}`;
-
-    //     expect(operation.result.paymasterAndData).toBe(
-    //       expectedPaymasterAndData,
-    //     );
-
-    //     const userOperationWithPaymasterAndData = {
-    //       ...userOperation,
-    //       paymasterAndData: operation.result.paymasterAndData,
-    //     };
-
-    //     const result = await localVerifying.validatePaymasterUserOp.staticCall(
-    //       userOperationWithPaymasterAndData,
-    //       '0x'.padEnd(66, '0'),
-    //       1,
-    //       { from: await entryPoint.getAddress() },
-    //     );
-
-    //     const packedResult = result[1].toString(16);
-
-    //     expect(packedResult).toBe('1');
-    //   });
-
-    //   it("should return '0x' paymasterAndData if 'customVerifyingPaymasterAddress' not set in chain config", async () => {
-    //     const keyringWithoutCustomVerifyingPaymaster =
-    //       new AccountAbstractionKeyring({ ...getInitialState() });
-    //     // await keyringWithoutCustomVerifyingPaymaster.setConfig({
-    //     //   simpleAccountFactory: await simpleAccountFactory.getAddress(),
-    //     //   entryPoint: await entryPoint.getAddress(),
-    //     // });
-    //     const account =
-    //       await keyringWithoutCustomVerifyingPaymaster.createAccount({
-    //         privateKey: aaOwnerSk,
-    //       });
-
-    //     const userOperation: EthUserOperation = {
-    //       sender: account.address,
-    //       nonce: '0x00',
-    //       initCode: '0x',
-    //       callData:
-    //         '0xb61d27f600000000000000000000000097a0924bf222499cba5c29ea746e82f2307302930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000',
-    //       signature: DUMMY_SIGNATURE,
-    //       paymasterAndData: '0x',
-    //       callGasLimit: '0x58a83',
-    //       verificationGasLimit: '0xe8c4',
-    //       preVerificationGas: '0xc57c',
-    //       maxFeePerGas: '0x11',
-    //       maxPriorityFeePerGas: '0x11',
-    //     };
-
-    //     const operation =
-    //       (await keyringWithoutCustomVerifyingPaymaster.submitRequest({
-    //         id: 'ef70fc30-93a8-4bb0-b8c7-9d3e7732372b',
-    //         scope,
-    //         account: account.id,
-    //         request: {
-    //           method: 'eth_patchUserOperation',
-    //           params: [userOperation],
-    //         },
-    //       })) as { pending: false; result: { paymasterAndData: string } };
-
-    //     expect(operation.result.paymasterAndData).toBe('0x');
-    //   });
-    // });
-
     describe('#signUserOperation', () => {
       it('should sign a user operation', async () => {
         const userOperation: EthUserOperation = {
@@ -787,32 +630,6 @@ describe('Keyring', () => {
         }),
       ).rejects.toThrow(`Account '${nonExistentAccountId}' not found`);
     });
-
-    // it('should return the result of setting the config when submitting a set config request', async () => {
-    //   const mockConfig: ChainConfig = {
-    //     simpleAccountFactory: '0x07a4E8982B685EC9d706FbF21459e159A141Cfe7',
-    //     entryPoint: '0x15FC356a6bd6b9915322A43327B9Cc5477568e99',
-    //     bundlerUrl: 'https://example.com/bundler',
-    //     customVerifyingPaymasterSK:
-    //       '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-    //     customVerifyingPaymasterAddress:
-    //       '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    //   };
-
-    //   const requestId = v4();
-    //   const request: KeyringRequest = {
-    //     id: requestId,
-    //     scope,
-    //     account: mockAccountId,
-    //     request: {
-    //       method: InternalMethod.SetConfig,
-    //       params: [mockConfig],
-    //     },
-    //   };
-
-    //   const response = await keyring.submitRequest(request);
-    //   expect(response).toStrictEqual({ pending: false, result: mockConfig });
-    // });
 
     describe('#getEntryPoint', () => {
       it('should throw an error if not on a supported chain', async () => {

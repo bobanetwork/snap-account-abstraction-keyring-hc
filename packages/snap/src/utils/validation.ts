@@ -1,7 +1,6 @@
 import { exactOptional, UrlStruct } from '@metamask/keyring-api';
 import type { Hex } from '@metamask/utils';
 import { isValidHexAddress } from '@metamask/utils';
-import { ethers } from 'ethers';
 import { assert, define, object, StructError } from 'superstruct';
 
 import { throwError } from './util';
@@ -12,10 +11,6 @@ const EthereumAddress = define(
   'EthereumAddress',
   (value) => typeof value === 'string' && isValidHexAddress(value as Hex),
 );
-
-const PrivateKey = define('PrivateKey', (value) => {
-  return typeof value === 'string' && ethers.isHexString(value, 32);
-});
 
 const VersionString = define('VersionString', (value) => {
   return typeof value === 'string';

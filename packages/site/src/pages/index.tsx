@@ -94,13 +94,10 @@ const Index = () => {
   const [transferAmount, setTransferAmount] = useState<string>('0.01');
 
   const [selectedAccount, setSelectedAccount] = useState<KeyringAccount>();
-  const [accountId, setAccountId] = useState<string | null>();
-  const [accountObject, setAccountObject] = useState<string | null>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
-  const [saltNumber, setSaltNumber] = useState<number>(0);
 
-  const client = new KeyringSnapRpcClient(snapId, window.ethereum);
+  const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
 
   useEffect(() => {
@@ -122,7 +119,7 @@ const Index = () => {
       setSelectedAccount(account);
 
       const saltIndexCount = accounts.filter(
-        (account) => account.options?.saltIndex,
+        (acc) => acc.options?.saltIndex,
       ).length;
       setCounter(saltIndexCount);
 
@@ -137,6 +134,7 @@ const Index = () => {
     getState().catch((error) => console.error(error));
 
     const listenToAccountChange = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       window.ethereum.on('accountsChanged', async () => {
         // reset connection
         const accounts = await client.listAccounts();
@@ -172,7 +170,7 @@ const Index = () => {
       ...snapState,
       accounts,
     });
-    setCounter(counter + 1)
+    setCounter(counter + 1);
   };
 
   const createAccount = async () => {
@@ -199,27 +197,13 @@ const Index = () => {
     return newAccount;
   };
 
-  const deleteAccount = async () => {
-    await client.deleteAccount(accountId as string);
-    await syncAccounts();
-  };
-
-  const updateAccount = async () => {
-    if (!accountObject) {
-      return;
-    }
-    const account: KeyringAccount = JSON.parse(accountObject);
-    await client.updateAccount(account);
-    await syncAccounts();
-  };
-
   const sendCustomTx = async (
     target: any,
     value: string,
     txData: string,
     paymasterOverride: boolean,
   ) => {
-    if (!snapState || !snapState.accounts) {
+    if (!snapState?.accounts) {
       return false;
     }
 
@@ -250,7 +234,7 @@ const Index = () => {
         request: {
           method,
           params: [transactionDetails],
-          id: snapState.accounts[0]?.id || '',
+          id: snapState.accounts[0]?.id ?? '',
         },
       },
     });
@@ -314,6 +298,7 @@ const Index = () => {
     return hasSufficientDeposit;
   };
 
+  // eslint-disable-next-line consistent-return
   const setUpPaymaster = async () => {
     if (!selectedAccount) {
       return false;
@@ -417,7 +402,7 @@ const Index = () => {
   };
 
   const sendBobaTx = async () => {
-    if (!snapState || !snapState.accounts || !selectedAccount) {
+    if (!snapState?.accounts || !selectedAccount) {
       return false;
     }
 
@@ -468,6 +453,7 @@ const Index = () => {
       const transferFunctionSelector = '0xa9059cbb';
       const txData =
         transferFunctionSelector +
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         targetAccount?.slice(2).padStart(64, '0') +
         Number(tokenAmount).toString(16).padStart(64, '0');
 
@@ -494,7 +480,7 @@ const Index = () => {
         request: {
           method,
           params: [transactionDetails],
-          id: snapState.accounts[0]?.id || '',
+          id: snapState.accounts[0]?.id ?? '',
         },
       },
     });
@@ -574,7 +560,6 @@ const Index = () => {
           title: 'Counter',
           value: counter.toString(),
           type: InputType.TextField,
-          onChange: (e: any) => {},
         },
       ],
       action: {
@@ -647,6 +632,7 @@ const Index = () => {
 
   return (
     <Container>
+      {/* eslint-disable-next-line no-negated-condition,no-nested-ternary */}
       {!state.isBobaSepolia ? (
         <CardContainer>
           <Card
@@ -662,7 +648,8 @@ const Index = () => {
             disabled={!state.hasMetaMask}
           />
         </CardContainer>
-      ) : !state.installedSnap ? (
+      ) : // eslint-disable-next-line no-negated-condition
+      !state.installedSnap ? (
         <CardContainer>
           <Card
             content={{

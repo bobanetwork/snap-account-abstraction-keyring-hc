@@ -14,13 +14,11 @@ import { getState } from './stateManagement';
 
 let keyring: AccountAbstractionKeyring;
 
-/**
- *
- */
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
     if (state) {
+      // eslint-disable-next-line require-atomic-updates
       keyring = new AccountAbstractionKeyring(state);
     }
   }

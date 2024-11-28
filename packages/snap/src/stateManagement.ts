@@ -16,10 +16,10 @@ const defaultState: KeyringState = {
  */
 export async function getState(): Promise<KeyringState> {
   try {
-    const state = await snap.request({
+    const state = (await snap.request({
       method: 'snap_manageState',
       params: { operation: 'get' },
-    }) as KeyringState | null;
+    })) as KeyringState | null;
     logger.debug('State retrieved successfully.');
     return { ...defaultState, ...state };
   } catch (error) {

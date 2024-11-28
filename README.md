@@ -8,7 +8,7 @@ Unlock the power of real-world data for Web3 with the Account Abstraction - Hybr
 
 ## Install the Snap
 
-To install the snap, follow [this link (only Boba Sepolia as of 21 Nov 2024)](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead. If you choose that option, *please* ensure you back up and save your private key.
+To install the snap, follow [this link (only Boba Sepolia as of 21 Nov 2024)](https://hc-wallet.sepolia.boba.network/) and select "Install Snap & Connect." This will also connect your MetaMask to the Boba Sepolia Network. You can then create your "AA HC Wallet" account; we recommend creating it deterministically, though you have the option to import a private key instead. If you choose that option, _please_ ensure you back up and save your private key.
 
 ### Recover your Wallet Address
 
@@ -19,6 +19,7 @@ If you created your new wallet deterministically, you can recover your account i
 ### Prerequisites
 
 Snaps is pre-release software. To interact with your Snaps, install:
+
 - [MetaMask Flask](https://metamask.io/flask/), a canary distribution for developers that provides access to upcoming features
 - `yarn`
 - `npm`
@@ -46,6 +47,7 @@ Start the application:
 cd <name-of-your-repo-root-dir>
 yarn start
 ```
+
 ## Contribute
 
 ### Testing and Linting
@@ -72,7 +74,7 @@ The project follows the same release process as the other libraries in the MetaM
 
    - For a backport release, the base branch should be the major version branch that you ensured existed in step 2. For a normal release, the base branch should be the main branch for that repository (which should be the default value). This should trigger the [`action-create-release-pr`](https://github.com/MetaMask/action-create-release-pr) workflow to create the release PR.
 
-4. Update the changelog to move each change entry into the appropriate change category (see [here](https://keepachangelog.com/en/1.0.0/#types) for the full list of change categories and the correct ordering). 
+4. Update the changelog to move each change entry into the appropriate change category (see [here](https://keepachangelog.com/en/1.0.0/#types) for the full list of change categories and the correct ordering).
 
    - Generally any changes that don't affect consumers of the package (e.g. lockfile changes or development environment changes) are omitted.
      Exceptions may be made for changes that might be of interest despite not having an effect upon the published package (e.g. major test improvements, security improvements, improved documentation, etc.).

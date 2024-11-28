@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 export class SecurePrivateKey {
-  #wallet: ethers.Wallet | null;
+  #wallet: ethers.Wallet;
 
   constructor(key: string | Buffer) {
     if (Buffer.isBuffer(key)) {
@@ -12,25 +12,25 @@ export class SecurePrivateKey {
   }
 
   async sign(message: string | Uint8Array): Promise<string> {
-    return this.#wallet!.signMessage(message);
+    return this.#wallet.signMessage(message);
   }
 
   async getAddress(): Promise<string> {
-    return this.#wallet!.address;
+    return this.#wallet.address;
   }
 
   async encrypt(password: string): Promise<string> {
-    return this.#wallet!.encrypt(password);
+    return this.#wallet.encrypt(password);
   }
 
   destroy(): void {
-    this.#wallet = null;
+    this.#wallet = {} as any;
     if (global.gc) {
       global.gc();
     }
   }
 
   async getPrivateKey(): Promise<string> {
-    return this.#wallet!.privateKey;
+    return this.#wallet.privateKey;
   }
 }

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable import/no-unassigned-import */
-import type {HardhatUserConfig} from 'hardhat/config';
+import type { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import '@typechain/hardhat';
 import '@nomicfoundation/hardhat-ethers';
 import 'dotenv/config';
-import type {NetworkUserConfig} from 'hardhat/types';
+import type { NetworkUserConfig } from 'hardhat/types';
 
-const {MNEMONIC} = process.env;
-const {INFURA_PROJECT_ID, USE_LOCAL} = process.env;
+const { MNEMONIC } = process.env;
+const { INFURA_PROJECT_ID, USE_LOCAL } = process.env;
 
 const networks: Record<string, NetworkUserConfig> = {
   hardhat: {
