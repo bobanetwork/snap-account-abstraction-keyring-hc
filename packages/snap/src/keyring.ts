@@ -579,7 +579,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
       case EthMethod.SignUserOperation: {
         const [userOp] = params as [EthUserOperation];
-        return await this.#signUserOperation(account.address, userOp);
+        return (await this.#signUserOperation(account.address, userOp)) as Json;
       }
 
       default: {
@@ -838,7 +838,7 @@ export class AccountAbstractionKeyring implements Keyring {
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
     console.log(signedUserOp);
 
-    ethBaseUserOp.signature = signedUserOp;
+    ethBaseUserOp.signature = signedUserOp!;
 
     const bundlerRes = await this.#sendUserOperation(
       ethBaseUserOp,

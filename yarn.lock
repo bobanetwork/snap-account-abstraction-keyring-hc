@@ -2816,7 +2816,7 @@ __metadata:
     "@metamask/eslint-config-typescript": ^12.1.0
     "@metamask/keyring-api": ^5.0.0
     "@metamask/snaps-cli": ^3.0.0
-    "@metamask/snaps-sdk": ^2.0.0
+    "@metamask/snaps-sdk": ^3.1.1
     "@metamask/utils": ^8.1.0
     "@nomicfoundation/hardhat-chai-matchers": ^2.0.0
     "@nomicfoundation/hardhat-ethers": ^3.0.0
@@ -2855,6 +2855,7 @@ __metadata:
     typechain: ^8.3.2
     typescript: ^5.3.3
     uuid: ^9.0.0
+    zod: ^3.23.8
   languageName: unknown
   linkType: soft
 
@@ -5520,7 +5521,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/snaps-sdk@npm:^2.0.0, @metamask/snaps-sdk@npm:^2.1.0":
+"@metamask/snaps-sdk@npm:^2.1.0":
   version: 2.1.0
   resolution: "@metamask/snaps-sdk@npm:2.1.0"
   dependencies:
