@@ -133,9 +133,17 @@ export function packUserOp(op: any, forSignature = true): string {
   if (forSignature) {
     return ethers.AbiCoder.defaultAbiCoder().encode(
       // eslint-disable-next-line prettier/prettier
-      ["address", "uint256", "bytes32", "bytes32",
+      [
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
         // eslint-disable-next-line prettier/prettier
-        "uint256", "uint256", "uint256", "uint256", "uint256",
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
         'bytes32',
       ],
       [
@@ -157,9 +165,17 @@ export function packUserOp(op: any, forSignature = true): string {
     // for the purpose of calculating gas cost encode also signature (and no keccak of bytes)
     return ethers.AbiCoder.defaultAbiCoder().encode(
       // eslint-disable-next-line prettier/prettier
-      ["address", "uint256", "bytes", "bytes",
+      [
+        'address',
+        'uint256',
+        'bytes',
+        'bytes',
         // eslint-disable-next-line prettier/prettier
-        "uint256", "uint256", "uint256", "uint256", "uint256",
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
         'bytes',
         'bytes',
       ],
