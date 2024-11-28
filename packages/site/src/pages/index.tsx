@@ -97,7 +97,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
 
-  const client = new KeyringSnapRpcClient(snapId, window.ethereum);
+  const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
 
   useEffect(() => {
