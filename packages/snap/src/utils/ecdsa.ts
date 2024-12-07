@@ -1,5 +1,6 @@
 import type { EthUserOperation } from '@metamask/keyring-api';
 import { ethers } from 'ethers';
+import { AA_CONFIG } from '../constants/aa-config';
 
 /**
  * Get the hash of a user operation.
@@ -15,7 +16,10 @@ export function getUserOperationHash(
   chainId: string,
 ): string {
   const chainIdDecimal = parseInt(chainId, 10);
-  const hash = ethers.keccak256(encodeUserOperation(userOperation));
+  const chainConfig = AA_CONFIG[chainIdDecimal];
+  const isV6 = (chainConfig.version == "0.6.0");
+
+  const hash = ethers.keccak256(encodeUserOperation(userOperation, isV6));
 
   const data = ethers.AbiCoder.defaultAbiCoder().encode(
     ['bytes32', 'address', 'uint256'],
@@ -31,31 +35,76 @@ export function getUserOperationHash(
  * @param userOperation - The user operation.
  * @returns The encoded user operation.
  */
-function encodeUserOperation(userOperation: EthUserOperation): string {
-  return ethers.AbiCoder.defaultAbiCoder().encode(
-    [
-      'address',
-      'uint256',
-      'bytes32',
-      'bytes32',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint256',
-      'bytes32',
-    ],
-    [
-      userOperation.sender,
-      userOperation.nonce,
-      ethers.keccak256(userOperation.initCode),
-      ethers.keccak256(userOperation.callData),
-      userOperation.callGasLimit,
-      userOperation.verificationGasLimit,
-      userOperation.preVerificationGas,
-      userOperation.maxFeePerGas,
-      userOperation.maxPriorityFeePerGas,
-      ethers.keccak256(userOperation.paymasterAndData),
-    ],
-  );
+function encodeUserOperation(userOperation: EthUserOperation, isV6: bool): string {
+  if (isV6) {
+    return ethers.AbiCoder.defaultAbiCoder().encode(
+      [
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'bytes32',
+      ],
+      [
+        userOperation.sender,
+        userOperation.nonce,
+        ethers.keccak256(userOperation.initCode),
+        ethers.keccak256(userOperation.callData),
+        userOperation.callGasLimit,
+        userOperation.verificationGasLimit,
+        userOperation.preVerificationGas,
+        userOperation.maxFeePerGas,
+        userOperation.maxPriorityFeePerGas,
+        ethers.keccak256(userOperation.paymasterAndData),
+      ],
+    );
+  } else {
+    const accountGasLimits = ethers.solidityPacked(
+      [
+        'uint128',
+        'uint128',
+      ],
+      [
+        userOperation.verificationGasLimit,
+        userOperation.callGasLimit,
+      ],
+    );
+    const gasFees = ethers.solidityPacked(
+      [
+        'uint128',
+        'uint128',
+      ],
+      [
+        userOperation.maxPriorityFeePerGas,
+        userOperation.maxFeePerGas,
+      ],
+    );
+    return ethers.AbiCoder.defaultAbiCoder().encode(
+      [
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
+        'bytes32',
+        'uint256',
+        'bytes32',
+        'bytes32',
+      ],
+      [
+        userOperation.sender,
+        userOperation.nonce,
+        ethers.keccak256(userOperation.initCode),
+        ethers.keccak256(userOperation.callData),
+        accountGasLimits,
+        userOperation.preVerificationGas,
+        gasFees,
+        ethers.keccak256("0x"),
+      ],
+    );
+  }
 }
