@@ -994,6 +994,11 @@ export class AccountAbstractionKeyring implements Keyring {
     entryPointAddress: any,
     bundlerUrl: string,
   ): Promise<IUserOpGasEstimate> {
+    // for v0.7 EntryPoint this field is not in the UserOperation RPC request
+    if (chainConfig.version != "0.6.0") {
+      delete userOp["paymasterAndData"];
+    }
+
     const requestBody = {
       method: 'eth_estimateUserOperationGas',
       id: 1,
