@@ -882,7 +882,7 @@ export class AccountAbstractionKeyring implements Keyring {
       },
     })) as any;
 
-    return ethBaseUserOp;
+    return [ { userOpHash: userOpHash}, bundlerRes, ethBaseUserOp];
   }
 
   async #getPaymasterAndData(
