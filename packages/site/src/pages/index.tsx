@@ -89,9 +89,9 @@ const Index = () => {
 
   const [transferToken, setTransferToken] = useState<string | null>('Boba');
   const [targetAccount, setTargetAccount] = useState<string | null>(
-    '0xcF044AB1e5b55203dC258F47756daFb7F8F01760',
+    '',
   );
-  const [transferAmount, setTransferAmount] = useState<string>('0.01');
+  const [transferAmount, setTransferAmount] = useState<string>('');
 
   const [selectedAccount, setSelectedAccount] = useState<KeyringAccount>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -190,11 +190,20 @@ const Index = () => {
   };
 
   const createAccountDeterministic = async () => {
-    const newAccount = await client.createAccount({
-      saltIndex: counter.toString(),
-    });
-    await syncAccounts();
-    return newAccount;
+    try {
+      const newAccount = await client.createAccount({
+        saltIndex: counter.toString(),
+      });
+      await syncAccounts();
+      return newAccount;
+    } catch (error) {
+      const matched = error.message.match(/Account address '0x[0-9A-Fa-f]{40}' already exists/);
+      if (matched) {
+          const addr = matched[0].split(" ")[2].substring(1,43);
+          throw new Error("Account address" + addr + " already exists at saltIndex " + counter.toString());
+      }
+      throw error;
+    }
   };
 
   const sendCustomTx = async (
@@ -403,7 +412,7 @@ const Index = () => {
 
   const sendBobaTx = async () => {
     if (!snapState?.accounts || !selectedAccount) {
-      return false;
+      throw new Error("Source account not connected");
     }
 
     // Paymaster Setup steps (only first time or when required)
@@ -560,6 +569,7 @@ const Index = () => {
           title: 'Counter',
           value: counter.toString(),
           type: InputType.TextField,
+          onChange: (event: any) => {},
         },
       ],
       action: {
@@ -626,7 +636,8 @@ const Index = () => {
         callback: async () => await sendBobaTx(),
         label: 'Transfer',
       },
-      successMessage: 'Funds transfer successful!',
+      successMessage: 'Funds transfer operation submitted',
+      failureMessage: 'Funds transfer operation failed',
     },
   ];
 
