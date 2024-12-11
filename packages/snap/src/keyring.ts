@@ -611,7 +611,7 @@ export class AccountAbstractionKeyring implements Keyring {
     paymasterAddr: string,
     tokenAddr: string,
     overrides?: UserOpOverrides,
-  ): Promise<EthUserOperation> {
+  ): Promise<[any, any, EthUserOperation]> {
     if (transactions.length !== 1) {
       throwError(`[Snap] Only one transaction per UserOp supported`);
     }
