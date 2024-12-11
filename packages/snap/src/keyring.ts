@@ -882,7 +882,7 @@ export class AccountAbstractionKeyring implements Keyring {
       },
     })) as any;
 
-    return [ { userOpHash: userOpHash}, bundlerRes, ethBaseUserOp];
+    return [{ userOpHash }, bundlerRes, ethBaseUserOp];
   }
 
   async #getPaymasterAndData(
@@ -997,8 +997,8 @@ export class AccountAbstractionKeyring implements Keyring {
     // for v0.7 EntryPoint this field is not in the UserOperation RPC request
     const { chainId } = await provider.getNetwork();
     const chainConfig = this.#getChainConfig(Number(chainId));
-    if (chainConfig.version != "0.6.0") {
-      delete userOp["paymasterAndData"];
+    if (chainConfig?.version !== '0.6.0') {
+      delete userOp.paymasterAndData;
     }
 
     const requestBody = {

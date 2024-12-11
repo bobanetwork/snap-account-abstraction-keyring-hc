@@ -88,9 +88,7 @@ const Index = () => {
   >();
 
   const [transferToken, setTransferToken] = useState<string | null>('Boba');
-  const [targetAccount, setTargetAccount] = useState<string | null>(
-    '',
-  );
+  const [targetAccount, setTargetAccount] = useState<string | null>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
 
   const [selectedAccount, setSelectedAccount] = useState<KeyringAccount>();
@@ -190,20 +188,11 @@ const Index = () => {
   };
 
   const createAccountDeterministic = async () => {
-    try {
-      const newAccount = await client.createAccount({
-        saltIndex: counter.toString(),
-      });
-      await syncAccounts();
-      return newAccount;
-    } catch (error) {
-      const matched = error.message.match(/Account address '0x[0-9A-Fa-f]{40}' already exists/);
-      if (matched) {
-          const addr = matched[0].split(" ")[2].substring(1,43);
-          throw new Error("Account address" + addr + " already exists at saltIndex " + counter.toString());
-      }
-      throw error;
-    }
+    const newAccount = await client.createAccount({
+      saltIndex: counter.toString(),
+    });
+    await syncAccounts();
+    return newAccount;
   };
 
   const sendCustomTx = async (
@@ -412,7 +401,7 @@ const Index = () => {
 
   const sendBobaTx = async () => {
     if (!snapState?.accounts || !selectedAccount) {
-      throw new Error("Source account not connected");
+      throw new Error('Source account not connected');
     }
 
     // Paymaster Setup steps (only first time or when required)
@@ -569,7 +558,6 @@ const Index = () => {
           title: 'Counter',
           value: counter.toString(),
           type: InputType.TextField,
-          onChange: (event: any) => {},
         },
       ],
       action: {
