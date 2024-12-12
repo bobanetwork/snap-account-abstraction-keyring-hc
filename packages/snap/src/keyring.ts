@@ -999,6 +999,11 @@ export class AccountAbstractionKeyring implements Keyring {
     const chainConfig = this.#getChainConfig(Number(chainId));
     if (chainConfig?.version !== '0.6.0') {
       delete userOp.paymasterAndData;
+
+      if (userOp.initCode.length >= 42) {
+        userOp.factory = userOp.initCode.substring(0, 42);
+        userOp.factoryData = `0x${String(userOp.initCode).substring(42)}`;
+      }
     }
 
     const requestBody = {
