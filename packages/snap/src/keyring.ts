@@ -611,7 +611,7 @@ export class AccountAbstractionKeyring implements Keyring {
     paymasterAddr: string,
     tokenAddr: string,
     overrides?: UserOpOverrides,
-  ): Promise<EthUserOperation> {
+  ): Promise<[any, any, EthUserOperation]> {
     if (transactions.length !== 1) {
       throwError(`[Snap] Only one transaction per UserOp supported`);
     }
@@ -882,7 +882,7 @@ export class AccountAbstractionKeyring implements Keyring {
       },
     })) as any;
 
-    return ethBaseUserOp;
+    return [{ userOpHash }, bundlerRes, ethBaseUserOp];
   }
 
   async #getPaymasterAndData(
@@ -994,6 +994,18 @@ export class AccountAbstractionKeyring implements Keyring {
     entryPointAddress: any,
     bundlerUrl: string,
   ): Promise<IUserOpGasEstimate> {
+    // for v0.7 EntryPoint this field is not in the UserOperation RPC request
+    const { chainId } = await provider.getNetwork();
+    const chainConfig = this.#getChainConfig(Number(chainId));
+    if (chainConfig?.version !== '0.6.0') {
+      delete userOp.paymasterAndData;
+
+      if (userOp.initCode.length >= 42) {
+        userOp.factory = userOp.initCode.substring(0, 42);
+        userOp.factoryData = `0x${String(userOp.initCode).substring(42)}`;
+      }
+    }
+
     const requestBody = {
       method: 'eth_estimateUserOperationGas',
       id: 1,
