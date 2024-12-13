@@ -88,10 +88,8 @@ const Index = () => {
   >();
 
   const [transferToken, setTransferToken] = useState<string | null>('Boba');
-  const [targetAccount, setTargetAccount] = useState<string | null>(
-    '0xcF044AB1e5b55203dC258F47756daFb7F8F01760',
-  );
-  const [transferAmount, setTransferAmount] = useState<string>('0.01');
+  const [targetAccount, setTargetAccount] = useState<string | null>('');
+  const [transferAmount, setTransferAmount] = useState<string>('');
 
   const [selectedAccount, setSelectedAccount] = useState<KeyringAccount>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -403,7 +401,7 @@ const Index = () => {
 
   const sendBobaTx = async () => {
     if (!snapState?.accounts || !selectedAccount) {
-      return false;
+      throw new Error('Source account not connected');
     }
 
     // Paymaster Setup steps (only first time or when required)
@@ -626,7 +624,8 @@ const Index = () => {
         callback: async () => await sendBobaTx(),
         label: 'Transfer',
       },
-      successMessage: 'Funds transfer successful!',
+      successMessage: 'Funds transfer operation submitted',
+      failureMessage: 'Funds transfer operation failed',
     },
   ];
 
