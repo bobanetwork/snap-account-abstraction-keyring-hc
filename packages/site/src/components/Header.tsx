@@ -47,10 +47,10 @@ const RightContainer = styled.div`
 `;
 
 const VersionStyle = styled.p`
+  width: fit-content;
   margin-top: 1.2rem;
   font-size: 1.6rem;
-  margin: auto;
-  padding-right: 2rem;
+  padding-right: 4rem;
   color: ${({ theme }) => theme.colors.text?.muted};
 `;
 
@@ -86,32 +86,50 @@ export const Header = () => {
     return (
       <VersionStyle>
         <div>
-          <b>Dapp V: </b>
-          {packageInfo.version}
-        </div>
-        <div>
-          <b>Snap V: </b>
           <span
             style={{
               backgroundColor: '#4CAF50',
               color: 'white',
               padding: '5px',
               borderRadius: '5px',
+              marginRight: '10px',
             }}
           >
-            Expected: {snapPackageInfo.version}
-          </span>{' '}
-          |
-          <span
-            style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              padding: '5px',
-              borderRadius: '5px',
-            }}
-          >
-            Installed: {state.installedSnap?.version}
+            Dapp Version: {packageInfo.version}
           </span>
+          <span
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              padding: '5px',
+              borderRadius: '5px',
+            }}
+          >
+            Snap Version: Expected: {snapPackageInfo.version}
+          </span>{' '}
+          {state.installedSnap?.version ? (
+            <span
+              style={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+              }}
+            >
+              Installed: {state.installedSnap?.version}
+            </span>
+          ) : (
+            <span
+              style={{
+                backgroundColor: '#f37086',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+              }}
+            >
+              Installed: No Snap found
+            </span>
+          )}
         </div>
 
         {defaultSnapOrigin.startsWith('local') && `(from ${defaultSnapOrigin})`}
