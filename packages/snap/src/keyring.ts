@@ -120,14 +120,6 @@ type IUserOpGasEstimate = {
   verificationGasLimit: string | undefined;
 };
 
-const KeyringRequestSchema = z.object({
-  id: z.string(),
-  request: z.object({
-    method: z.string(),
-    params: z.array(z.unknown()).optional().default([]),
-  }),
-});
-
 // eslint-disable-next-line jsdoc/require-jsdoc
 export function packUserOp(op: any, forSignature = true): string {
   if (forSignature) {
@@ -424,29 +416,31 @@ export class AccountAbstractionKeyring implements Keyring {
     return this.#syncSubmitRequest(request);
   }
 
-  async #syncSubmitRequest(request: unknown): Promise<SubmitRequestResponse> {
+  async #syncSubmitRequest(request: any): Promise<SubmitRequestResponse> {
     try {
-      const validatedRequest = KeyringRequestSchema.parse(request);
+      const { method, params } = request.request;
+      const scope = request.scope ? request.scope : params[0].scope;
+      let selectedWallet;
 
-      const { method, params = [] } = validatedRequest.request;
-      const { scope } = (params[0] as Record<string, unknown>) || {};
+      // @DEV todo create one uniform way of retrieving the wallet addr
+      try {
+        selectedWallet = this.#getWalletByAddress(request.account);
+      } catch (error) {
+        selectedWallet = this.#getWalletById(request.id);
+      }
 
-      console.log(
-        `handling goes here`,
-        scope,
-        JSON.stringify(validatedRequest),
-      );
-
-      const signature = await this.#handleSigningRequest({
-        account: this.#getWalletById(validatedRequest.id).account,
+      const response = await this.#handleSigningRequest({
+        account: selectedWallet.account,
         method,
         params: params as Json,
-        scope: scope as string,
+        scope,
       });
+
+      console.log('Request Response: ', JSON.stringify(response));
 
       return {
         pending: false,
-        result: signature,
+        result: response,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -465,12 +459,15 @@ export class AccountAbstractionKeyring implements Keyring {
   }
 
   #getWalletByAddress(address: string): Wallet {
-    const match = Object.values(this.#state.wallets).find(
-      (wallet) =>
-        wallet.account.address.toLowerCase() === address.toLowerCase(),
-    );
-
-    return match ?? throwError(`Account '${address}' not found`);
+    const walletByIdentifier = this.#state.wallets[address];
+    if (!walletByIdentifier) {
+      const match = Object.values(this.#state.wallets).find(
+        (wallet) =>
+          wallet.account.address.toLowerCase() === address.toLowerCase(),
+      );
+      return match ?? throwError(`Account '${address}' not found`);
+    }
+    return walletByIdentifier;
   }
 
   #getKeyPair(privateKey?: string): {
@@ -535,7 +532,10 @@ export class AccountAbstractionKeyring implements Keyring {
     }
 
     // params is always an array, payload can be an array, or single tx
-    const payload = (params as any)[0]?.payload;
+    let payload = (params as any)[0]?.payload;
+    if (!payload) {
+      payload = params;
+    }
     const mapParamsToTransactions = (): EthBaseTransaction[] => {
       if (Array.isArray(payload)) {
         return payload as EthBaseTransaction[];
@@ -547,10 +547,10 @@ export class AccountAbstractionKeyring implements Keyring {
     const overrides: UserOpOverrides | undefined =
       payload?.overrides as UserOpOverrides; // TODO: We might want to use that object for the other RPC calls too
 
+    console.log('Requested: ', method, ' return: ', JSON.stringify(params));
+
     switch (method) {
       case InternalMethod.SendUserOpBoba: {
-        console.log('Trigger boba send request');
-
         return await this.#prepareAndSignUserOperationBoba(
           account.address,
           mapParamsToTransactions(),
@@ -580,18 +580,20 @@ export class AccountAbstractionKeyring implements Keyring {
       }
 
       case EthMethod.PrepareUserOperation: {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore-error will fix type in next PR
         return await this.#prepareUserOperation(
           account.address,
           mapParamsToTransactions(),
         );
       }
 
-      // case EthMethod.PatchUserOperation: {
-      //   const [userOp] = params as [EthUserOperation];
-      //   return await this.#patchUserOperation(account.address, userOp);
-      // }
+      case EthMethod.PatchUserOperation: {
+        const [userOp] = params as [EthUserOperation];
+        console.log(
+          'Metamask sent UserOperation back for patching',
+          JSON.stringify(userOp),
+        );
+        return await this.#patchUserOperation(userOp);
+      }
 
       case EthMethod.SignUserOperation: {
         const [userOp] = params as [EthUserOperation];
@@ -953,11 +955,45 @@ export class AccountAbstractionKeyring implements Keyring {
         transaction.value ?? '0x00',
         transaction.data ?? ethers.ZeroHash,
       ]),
+      gasLimits: {
+        callGasLimit: '0x58a83',
+        verificationGasLimit: '0xe8c4',
+        preVerificationGas: '0xc57c',
+      },
       dummySignature: DUMMY_SIGNATURE,
-      dummyPaymasterAndData: getDummyPaymasterAndData(),
+      dummyPaymasterAndData: getDummyPaymasterAndData(), // TODO paymaster
       bundlerUrl: chainConfig.bundlerUrl,
     };
     return ethBaseUserOp;
+  }
+
+  async #patchUserOperation(userOperation: EthUserOperation): Promise<Json> {
+    const { chainId } = await provider.getNetwork();
+
+    const chainConfig = this.#getChainConfig(Number(chainId));
+    if (!chainConfig) {
+      throwError(`Invalid Chain Configuration for ${Number(chainId)}`);
+    }
+
+    console.log('Estimating User Operation: ', JSON.stringify(userOperation));
+
+    // TODO estimation is done without the paymasterAndData field
+    const estimate = await this.#estimateUserOpGas(
+      userOperation,
+      chainConfig.entryPoint,
+      chainConfig.bundlerUrl,
+    );
+
+    console.log('UserOperation estimated: ', estimate);
+
+    return {
+      // TODO paymasterAndData | No paymasterAndData for v.07 allowed but required in docs (?)
+      // TODO paymasterAndData needs to be submitted to the Chain API
+      paymasterAndData: '0x',
+      callGasLimit: estimate.callGasLimit, // ~360k gas
+      verificationGasLimit: estimate.verificationGasLimit, // ~60k gas
+      preVerificationGas: estimate.preVerificationGas, // ~50k gas
+    } as Json;
   }
 
   async #sendUserOperation(
@@ -981,7 +1017,7 @@ export class AccountAbstractionKeyring implements Keyring {
       });
 
       const data = await response.json();
-      console.log('Response:', data);
+      console.log('Response:', JSON.stringify(data));
       return data; // Return the data
     } catch (error) {
       console.error('Error:', error);
@@ -998,6 +1034,7 @@ export class AccountAbstractionKeyring implements Keyring {
     const { chainId } = await provider.getNetwork();
     const chainConfig = this.#getChainConfig(Number(chainId));
     if (chainConfig?.version !== '0.6.0') {
+      // @DEV needed for v0.7 operations
       delete userOp.paymasterAndData;
 
       if (userOp.initCode.length >= 42) {
@@ -1022,7 +1059,7 @@ export class AccountAbstractionKeyring implements Keyring {
       });
 
       const data = await response.json();
-      console.log('Response:', data);
+      console.log('Gas Estimation Response:', JSON.stringify(data));
       if (data.error?.message) {
         console.error(
           'JSON ESTIMATE: ',
@@ -1114,6 +1151,55 @@ export class AccountAbstractionKeyring implements Keyring {
 
     const signature = await secureKey.sign(ethers.getBytes(userOpHash));
     secureKey.destroy();
+
+    return signature;
+  }
+
+  /**
+   * Draft method
+   * --
+   * The transaction submitted to MM Flask via prepareUserOperation and patchUserOperation contains
+   * a paymasterAndData field which likely leads to a AA23 error. If userOP is sent by the snap,
+   * it succeeds internally, but the Metamask Flask UI labels it as Failed - as it most likely tries to
+   * send it itself, which does not succeed due to AA23 and the way things are build on the MM side.
+   * @param address
+   * @param userOp
+   */
+  async #signAndSendUserOperationV07(
+    address: string,
+    userOp: EthUserOperation,
+  ): Promise<string | undefined> {
+    const wallet = this.#getWalletByAddress(address);
+    const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
+    const secureKey = new SecurePrivateKey(decryptedPrivateKey);
+    const EP = await entryPoint.getAddress();
+    const { chainId } = await provider.getNetwork();
+    const entryPoint = await this.#getEntryPoint(
+      Number(chainId),
+      new ethers.Wallet(decryptedPrivateKey),
+    );
+
+    userOp.signature = '0x';
+    delete userOp.paymasterAndData;
+
+    console.log('Hashing UserOperation: ', JSON.stringify(userOp));
+
+    const userOpHash = getUserOperationHash(userOp, EP, chainId.toString(10));
+    const signature = await secureKey.sign(ethers.getBytes(userOpHash));
+    secureKey.destroy();
+    console.log('UserOp:', userOp);
+    console.log('EntryPoint:', EP);
+    console.log('Generated signature:', signature);
+
+    // const res = await this.#sendUserOperation(
+    //   {
+    //     ...userOp,
+    //     signature,
+    //   },
+    //   EP,
+    //   'https://bundler-hc.sepolia.boba.network',
+    // );
+    // console.log('Broadcasted UP --> ', res);
 
     return signature;
   }
