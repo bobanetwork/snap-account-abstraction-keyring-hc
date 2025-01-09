@@ -88,24 +88,20 @@ export const Header = () => {
         <div>
           <span
             style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
               padding: '5px',
               borderRadius: '5px',
               marginRight: '10px',
             }}
           >
-            Dapp Version: {packageInfo.version}
+            DApp: {packageInfo.version}
           </span>
           <span
             style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
               padding: '5px',
               borderRadius: '5px',
             }}
           >
-            Snap Version: Expected: {snapPackageInfo.version}
+            Expected: {snapPackageInfo.version}
           </span>{' '}
           {state.installedSnap?.version ? (
             <span
@@ -128,6 +124,22 @@ export const Header = () => {
               }}
             >
               Installed: No Snap found
+            </span>
+          )}
+          {state.installedSnap?.version && (
+            <span
+              style={{
+                marginLeft: '1rem',
+                backgroundColor: '#6e6e6e',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+              }}
+            >
+              Network:{' '}
+              {window.ethereum.networkVersion === '28882'
+                ? 'Boba Sepolia'
+                : 'Boba Mainnet'}
             </span>
           )}
         </div>

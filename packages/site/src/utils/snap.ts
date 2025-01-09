@@ -29,9 +29,9 @@ export const connectSnap = async (
   // check for current connected chain and force user to switch to boba sepolia.
   const currentChain = window.ethereum.networkVersion;
   // 901 = local boba network
-  const desiredChain: string = isLocalNetwork ? '901' : '28882';
+  const desiredChain: string = isLocalNetwork ? '901' : '288';
   if (currentChain !== desiredChain) {
-    const hexDesiredChain = isLocalNetwork ? '0x385' : '0x70d2';
+    const hexDesiredChain = isLocalNetwork ? '0x385' : '0x120';
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
@@ -48,11 +48,11 @@ export const connectSnap = async (
           params: [
             {
               chainId: hexDesiredChain,
-              chainName: isLocalNetwork ? 'Boba Local' : 'Boba Sepolia',
+              chainName: isLocalNetwork ? 'Boba Local' : 'Boba Network',
               rpcUrls: [
                 isLocalNetwork
                   ? 'http://localhost:9545'
-                  : 'https://sepolia.boba.network',
+                  : 'https://mainnet.boba.network',
               ],
               nativeCurrency: {
                 name: 'ETH',
