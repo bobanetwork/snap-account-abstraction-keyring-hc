@@ -8,7 +8,7 @@ import packageInfo from '../../package.json';
 import Logo from '../assets/boba-logo.png';
 import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
-import { connectSnap, getSnap } from '../utils';
+import { connectSnap, connectSnapWithNetwork, getSnap } from '../utils';
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -86,6 +86,18 @@ export const Header = () => {
     return (
       <VersionStyle>
         <div>
+          {defaultSnapOrigin.startsWith('local') &&
+            `(from ${defaultSnapOrigin})` && (
+              <span
+                style={{
+                  padding: '5px',
+                  borderRadius: '5px',
+                  marginRight: '10px',
+                }}
+              >
+                Local Snap
+              </span>
+            )}
           <span
             style={{
               padding: '5px',
@@ -126,25 +138,7 @@ export const Header = () => {
               Installed: No Snap found
             </span>
           )}
-          {state.installedSnap?.version && (
-            <span
-              style={{
-                marginLeft: '1rem',
-                backgroundColor: '#6e6e6e',
-                color: 'white',
-                padding: '5px',
-                borderRadius: '5px',
-              }}
-            >
-              Network:{' '}
-              {window.ethereum.networkVersion === '28882'
-                ? 'Boba Sepolia'
-                : 'Boba Mainnet'}
-            </span>
-          )}
         </div>
-
-        {defaultSnapOrigin.startsWith('local') && `(from ${defaultSnapOrigin})`}
       </VersionStyle>
     );
   };
@@ -157,6 +151,24 @@ export const Header = () => {
       </LogoWrapper>
       <RightContainer>
         <Version />
+        {state.installedSnap?.version && (
+          <button
+            style={{ marginRight: '1rem' }}
+            onClick={async () =>
+              connectSnapWithNetwork(
+                window.ethereum.networkVersion === '28882'
+                  ? 'mainnet'
+                  : 'sepolia',
+              )
+            }
+          >
+            {window.ethereum.networkVersion === '28882' ? (
+              <span>Switch To Boba Mainnet</span>
+            ) : (
+              <span>Switch to Boba Sepolia</span>
+            )}
+          </button>
+        )}
         <HeaderButtons
           state={state}
           onConnectClick={handleConnectClick}

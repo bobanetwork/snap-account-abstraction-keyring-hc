@@ -40,6 +40,7 @@ const Button = styled.button`
   align-items: center;
   justify-content: center;
   margin-top: auto;
+
   ${({ theme }) => theme.mediaQueries.small} {
     width: 100%;
   }
@@ -50,7 +51,7 @@ const ButtonText = styled.span`
 `;
 
 const ConnectedContainer = styled.div`
-  display: flex;
+  display: inline-flex;
   align-self: flex-start;
   align-items: center;
   justify-content: center;
@@ -61,6 +62,8 @@ const ConnectedContainer = styled.div`
   color: ${(props) => props.theme.colors.text?.inverse};
   font-weight: bold;
   padding: 1.2rem;
+  margin-right: 1rem;
+  margin-left: 1rem;
 `;
 
 const ConnectedIndicator = styled.div`
@@ -115,7 +118,7 @@ export const ConnectButton = (props: ComponentProps<typeof Button>) => {
   return (
     <Button id="connectButton" {...props}>
       <MetaMaskFox />
-      <ButtonText>Connect To Boba Sepolia</ButtonText>
+      <ButtonText>Connect Snap</ButtonText>
     </Button>
   );
 };
@@ -151,6 +154,12 @@ export const HeaderButtons = ({
   updateAvailable: boolean;
   onConnectClick(): unknown;
 }) => {
+  const getNetworkName = () => {
+    return window.ethereum.networkVersion === '28882'
+      ? 'Boba Sepolia'
+      : 'Boba Mainnet';
+  };
+
   if (!state.hasMetaMask && !state.installedSnap) {
     return <InstallMetaMaskButton />;
   }
@@ -172,10 +181,16 @@ export const HeaderButtons = ({
   }
 
   return (
-    <ConnectedContainer>
-      <ConnectedIndicator />
-      <ButtonText id="snapConnected">Connected</ButtonText>
-    </ConnectedContainer>
+    <div>
+      <div>
+        <ConnectedContainer>
+          <ConnectedIndicator />
+          <ButtonText id="snapConnected">
+            Connected to: {getNetworkName()}
+          </ButtonText>
+        </ConnectedContainer>
+      </div>
+    </div>
   );
 };
 

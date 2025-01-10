@@ -329,7 +329,8 @@ export class AccountAbstractionKeyring implements Keyring {
           // 4337 methods
           EthMethod.PrepareUserOperation,
           EthMethod.PatchUserOperation,
-          EthMethod.SignUserOperation,
+          // TODO - disabled until MM Flask allows 0.7 UserOperations
+          // EthMethod.SignUserOperation,
         ],
         type: EthAccountType.Erc4337,
       };
