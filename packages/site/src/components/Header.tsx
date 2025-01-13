@@ -8,7 +8,7 @@ import packageInfo from '../../package.json';
 import Logo from '../assets/boba-logo.png';
 import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
-import { connectSnap, getSnap } from '../utils';
+import { connectSnap, connectSnapWithNetwork, getSnap } from '../utils';
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -47,10 +47,10 @@ const RightContainer = styled.div`
 `;
 
 const VersionStyle = styled.p`
+  width: fit-content;
   margin-top: 1.2rem;
   font-size: 1.6rem;
-  margin: auto;
-  padding-right: 2rem;
+  padding-right: 4rem;
   color: ${({ theme }) => theme.colors.text?.muted};
 `;
 
@@ -86,35 +86,59 @@ export const Header = () => {
     return (
       <VersionStyle>
         <div>
-          <b>Dapp V: </b>
-          {packageInfo.version}
-        </div>
-        <div>
-          <b>Snap V: </b>
+          {defaultSnapOrigin.startsWith('local') &&
+            `(from ${defaultSnapOrigin})` && (
+              <span
+                style={{
+                  padding: '5px',
+                  borderRadius: '5px',
+                  marginRight: '10px',
+                }}
+              >
+                Local Snap
+              </span>
+            )}
           <span
             style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
+              padding: '5px',
+              borderRadius: '5px',
+              marginRight: '10px',
+            }}
+          >
+            DApp: {packageInfo.version}
+          </span>
+          <span
+            style={{
               padding: '5px',
               borderRadius: '5px',
             }}
           >
             Expected: {snapPackageInfo.version}
           </span>{' '}
-          |
-          <span
-            style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              padding: '5px',
-              borderRadius: '5px',
-            }}
-          >
-            Installed: {state.installedSnap?.version}
-          </span>
+          {state.installedSnap?.version ? (
+            <span
+              style={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+              }}
+            >
+              Installed: {state.installedSnap?.version}
+            </span>
+          ) : (
+            <span
+              style={{
+                backgroundColor: '#f37086',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+              }}
+            >
+              Installed: No Snap found
+            </span>
+          )}
         </div>
-
-        {defaultSnapOrigin.startsWith('local') && `(from ${defaultSnapOrigin})`}
       </VersionStyle>
     );
   };
@@ -127,6 +151,24 @@ export const Header = () => {
       </LogoWrapper>
       <RightContainer>
         <Version />
+        {state.installedSnap?.version && (
+          <button
+            style={{ marginRight: '1rem' }}
+            onClick={async () =>
+              connectSnapWithNetwork(
+                window.ethereum.networkVersion === '28882'
+                  ? 'mainnet'
+                  : 'sepolia',
+              )
+            }
+          >
+            {window.ethereum.networkVersion === '28882' ? (
+              <span>Switch To Boba Mainnet</span>
+            ) : (
+              <span>Switch to Boba Sepolia</span>
+            )}
+          </button>
+        )}
         <HeaderButtons
           state={state}
           onConnectClick={handleConnectClick}

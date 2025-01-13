@@ -1,7 +1,40 @@
 import snapPackageInfo from '../../../snap/package.json';
 import { defaultSnapOrigin } from '../config';
-import { isLocalNetwork } from '../config/snap';
 import type { GetSnapsResponse, Snap } from '../types';
+
+// Network configuration type
+type NetworkConfig = {
+  chainId: string;
+  hexChainId: string;
+  chainName: string;
+  rpcUrl: string;
+  blockExplorerUrl: string;
+};
+
+// Network configurations
+const NETWORKS: Record<string, NetworkConfig> = {
+  local: {
+    chainId: '901',
+    hexChainId: '0x385',
+    chainName: 'Boba Local',
+    rpcUrl: 'http://localhost:9545',
+    blockExplorerUrl: '',
+  },
+  mainnet: {
+    chainId: '288',
+    hexChainId: '0x120',
+    chainName: 'Boba Mainnet',
+    rpcUrl: 'wss://gateway.tenderly.co/public/boba-ethereum',
+    blockExplorerUrl: 'https://bobascan.com',
+  },
+  sepolia: {
+    chainId: '28882',
+    hexChainId: '0x70d2',
+    chainName: 'Boba Sepolia',
+    rpcUrl: 'https://sepolia.boba.network',
+    blockExplorerUrl: 'https://testnet.bobascan.com',
+  },
+};
 
 /**
  * Get the installed snaps in MetaMask.
@@ -14,30 +47,22 @@ export const getSnaps = async (): Promise<GetSnapsResponse> => {
   })) as unknown as GetSnapsResponse;
 };
 
-/**
- * Connect a snap to MetaMask.
- *
- * @param snapId - The ID of the snap.
- * @param params - The params to pass with the snap to connect.
- */
-export const connectSnap = async (
-  snapId: string = defaultSnapOrigin,
-  params: Record<'version' | string, unknown> = {
-    version: snapPackageInfo.version,
-  },
+export const switchToNetwork = async (
+  networkType: 'local' | 'mainnet' | 'sepolia',
 ) => {
-  // check for current connected chain and force user to switch to boba sepolia.
+  const network = NETWORKS[networkType];
+  if (!network) {
+    throw new Error('invalid network');
+  }
   const currentChain = window.ethereum.networkVersion;
-  // 901 = local boba network
-  const desiredChain: string = isLocalNetwork ? '901' : '28882';
-  if (currentChain !== desiredChain) {
-    const hexDesiredChain = isLocalNetwork ? '0x385' : '0x70d2';
+
+  if (currentChain !== network.chainId) {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [
           {
-            chainId: hexDesiredChain,
+            chainId: network.hexChainId,
           },
         ],
       });
@@ -47,32 +72,54 @@ export const connectSnap = async (
           method: 'wallet_addEthereumChain',
           params: [
             {
-              chainId: hexDesiredChain,
-              chainName: isLocalNetwork ? 'Boba Local' : 'Boba Sepolia',
-              rpcUrls: [
-                isLocalNetwork
-                  ? 'http://localhost:9545'
-                  : 'https://sepolia.boba.network',
-              ],
+              chainId: network.hexChainId,
+              chainName: network.chainName,
+              rpcUrls: [network.rpcUrl],
               nativeCurrency: {
                 name: 'ETH',
                 symbol: 'ETH',
                 decimals: 18,
               },
-              blockExplorerUrls: ['https://testnet.bobascan.com'],
+              blockExplorerUrls: [network.blockExplorerUrl],
             },
           ],
         });
       }
     }
   }
+};
 
+/**
+ * Connect a snap to MetaMask.
+ *
+ * @param snapId - The ID of the snap.
+ * @param params - The params to pass with the snap to connect.
+ */
+// Separate snap connection function that doesn't force network switching
+export const connectSnap = async (
+  snapId: string = defaultSnapOrigin,
+  params: Record<'version' | string, unknown> = {
+    version: snapPackageInfo.version,
+  },
+) => {
   await window.ethereum.request({
     method: 'wallet_requestSnaps',
     params: {
       [snapId]: params,
     },
   });
+};
+
+// Utility function that combines network switching and snap connection
+export const connectSnapWithNetwork = async (
+  networkType: 'local' | 'mainnet' | 'sepolia',
+  snapId: string = defaultSnapOrigin,
+  params: Record<'version' | string, unknown> = {
+    version: snapPackageInfo.version,
+  },
+) => {
+  await switchToNetwork(networkType);
+  await connectSnap(snapId, params);
 };
 
 export const loadAccountConnected = async () => {

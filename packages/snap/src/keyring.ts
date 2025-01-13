@@ -321,7 +321,8 @@ export class AccountAbstractionKeyring implements Keyring {
           // 4337 methods
           EthMethod.PrepareUserOperation,
           EthMethod.PatchUserOperation,
-          EthMethod.SignUserOperation,
+          // TODO - disabled until MM Flask allows 0.7 UserOperations
+          // EthMethod.SignUserOperation,
         ],
         type: EthAccountType.Erc4337,
       };
@@ -436,8 +437,6 @@ export class AccountAbstractionKeyring implements Keyring {
         scope,
       });
 
-      console.log('Request Response: ', JSON.stringify(response));
-
       return {
         pending: false,
         result: response,
@@ -546,8 +545,6 @@ export class AccountAbstractionKeyring implements Keyring {
     // Allow developers to override certain params for debugging purposes.
     const overrides: UserOpOverrides | undefined =
       payload?.overrides as UserOpOverrides; // TODO: We might want to use that object for the other RPC calls too
-
-    console.log('Requested: ', method, ' return: ', JSON.stringify(params));
 
     switch (method) {
       case InternalMethod.SendUserOpBoba: {
@@ -1164,45 +1161,47 @@ export class AccountAbstractionKeyring implements Keyring {
    * send it itself, which does not succeed due to AA23 and the way things are build on the MM side.
    * @param address
    * @param userOp
+   * @param chainId
+   * @param signer
    */
-  async #signAndSendUserOperationV07(
-    address: string,
-    userOp: EthUserOperation,
-  ): Promise<string | undefined> {
-    const wallet = this.#getWalletByAddress(address);
-    const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
-    const secureKey = new SecurePrivateKey(decryptedPrivateKey);
-    const EP = await entryPoint.getAddress();
-    const { chainId } = await provider.getNetwork();
-    const entryPoint = await this.#getEntryPoint(
-      Number(chainId),
-      new ethers.Wallet(decryptedPrivateKey),
-    );
+  // async #signAndSendUserOperationV07(
+  //   address: string,
+  //   userOp: EthUserOperation,
+  // ): Promise<string | undefined> {
+  //   const wallet = this.#getWalletByAddress(address);
+  //   const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
+  //   const secureKey = new SecurePrivateKey(decryptedPrivateKey);
+  //   const EP = await entryPoint.getAddress();
+  //   const { chainId } = await provider.getNetwork();
+  //   const entryPoint = await this.#getEntryPoint(
+  //     Number(chainId),
+  //     new ethers.Wallet(decryptedPrivateKey),
+  //   );
+  //
+  //   userOp.signature = '0x';
+  //   delete userOp.paymasterAndData;
+  //
+  //   console.log('Hashing UserOperation: ', JSON.stringify(userOp));
+  //
+  //   const userOpHash = getUserOperationHash(userOp, EP, chainId.toString(10));
+  //   const signature = await secureKey.sign(ethers.getBytes(userOpHash));
+  //   secureKey.destroy();
+  //   console.log('UserOp:', userOp);
+  //   console.log('EntryPoint:', EP);
+  //   console.log('Generated signature:', signature);
 
-    userOp.signature = '0x';
-    delete userOp.paymasterAndData;
+  // const res = await this.#sendUserOperation(
+  //   {
+  //     ...userOp,
+  //     signature,
+  //   },
+  //   EP,
+  //   'https://bundler-hc.sepolia.boba.network',
+  // );
+  // console.log('Broadcasted UP --> ', res);
 
-    console.log('Hashing UserOperation: ', JSON.stringify(userOp));
-
-    const userOpHash = getUserOperationHash(userOp, EP, chainId.toString(10));
-    const signature = await secureKey.sign(ethers.getBytes(userOpHash));
-    secureKey.destroy();
-    console.log('UserOp:', userOp);
-    console.log('EntryPoint:', EP);
-    console.log('Generated signature:', signature);
-
-    // const res = await this.#sendUserOperation(
-    //   {
-    //     ...userOp,
-    //     signature,
-    //   },
-    //   EP,
-    //   'https://bundler-hc.sepolia.boba.network',
-    // );
-    // console.log('Broadcasted UP --> ', res);
-
-    return signature;
-  }
+  // return signature;
+  // }
 
   async #getAAFactory(chainId: number, signer: ethers.Wallet) {
     if (!this.#isSupportedChain(chainId)) {

@@ -521,7 +521,8 @@ const Index = () => {
   const accountManagementMethods = [
     {
       name: 'Create account',
-      description: 'Create a 4337 account using an admin private key',
+      description:
+        'Create a 4337 account using an admin private key and a salt, which you need to write down or store to re-create the wallet.',
       inputs: [
         {
           id: 'create-account-private-key',
@@ -534,7 +535,7 @@ const Index = () => {
         },
         {
           id: 'create-account-salt',
-          title: 'Salt (optional)',
+          title: 'Salt (optional, write it down)',
           value: salt,
           type: InputType.TextField,
           placeholder: 'E.g. 0x123',
@@ -551,7 +552,7 @@ const Index = () => {
     {
       name: 'Create account (Deterministic)',
       description:
-        'Create a 4337 account using a deterministic key generated through the snap',
+        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
       inputs: [
         {
           id: 'create-account-deterministic',
