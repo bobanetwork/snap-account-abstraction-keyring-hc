@@ -611,15 +611,15 @@ const Index = () => {
           onChange: (event: any) =>
             setTransferAmount(event.currentTarget.value),
         },
-        {
-          id: 'transfer-fund-boba-paymaster',
-          title: 'Select boba as paymaster.',
-          value: bobaPaymasterSelected,
-          type: InputType.CheckBox,
-          placeholder: 'E.g. 0.00',
-          onChange: (event: any) =>
-            setBobaPaymasterSelected(event.target.checked),
-        },
+        // {
+        //   id: 'transfer-fund-boba-paymaster',
+        //   title: 'Select boba as paymaster.',
+        //   value: bobaPaymasterSelected,
+        //   type: InputType.CheckBox,
+        //   placeholder: 'E.g. 0.00',
+        //   onChange: (event: any) =>
+        //     setBobaPaymasterSelected(event.target.checked),
+        // },
       ],
       action: {
         callback: async () => await sendBobaTx(),
