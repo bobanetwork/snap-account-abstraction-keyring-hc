@@ -627,7 +627,6 @@ export class AccountAbstractionKeyring implements Keyring {
     const wallet = this.#getWalletByAddress(address);
     const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
     const signer = getSigner(decryptedPrivateKey);
-
     // eslint-disable-next-line camelcase
     const aaInstance = SimpleAccount__factory.connect(
       wallet.account.address, // AA address

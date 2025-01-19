@@ -97,7 +97,6 @@ const Index = () => {
 
   const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
-
   useEffect(() => {
     /**
      * Return the current state of the snap.
@@ -401,7 +400,7 @@ const Index = () => {
 
   const sendBobaTx = async () => {
     if (!snapState?.accounts || !selectedAccount) {
-      throw new Error('Source account not connected');
+      throw new Error('Please connect your wallet first!');
     }
 
     // Paymaster Setup steps (only first time or when required)
@@ -471,17 +470,6 @@ const Index = () => {
     if (bobaPaymasterSelected) {
       method = 'eth_sendUserOpBobaPM';
     }
-    console.log({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId: defaultSnapOrigin,
-        request: {
-          method,
-          params: [transactionDetails],
-          id: snapState.accounts[0]?.id ?? '',
-        },
-      },
-    });
 
     const submitRes = await window.ethereum.request({
       method: 'wallet_invokeSnap',
