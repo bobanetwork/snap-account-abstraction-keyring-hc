@@ -65,6 +65,48 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
+    'https://staging.gateway.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://stagingv2.gateway.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
     'https://hc-wallet.sepolia.boba.network',
     [
       // Keyring methods
