@@ -169,4 +169,25 @@ export const originPermissions = new Map<string, string[]>([
       InternalMethod.SendUserOpBobaPM,
     ],
   ],
+  [
+    'https://codecaster.onrender.com',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
 ]);
