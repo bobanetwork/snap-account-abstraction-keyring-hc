@@ -7,7 +7,7 @@
     "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring.git"
   },
   "source": {
-    "shasum": "REgYgsGp+C+wo84ICta5jvcsyJLAUesrVcFNUCDH1aM=",
+    "shasum": "P9nCsyJIQRCzcwM5jOv7XvIKegad/MM4NnXCGkNGnpU=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
