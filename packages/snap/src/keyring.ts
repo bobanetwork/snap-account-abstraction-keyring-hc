@@ -797,8 +797,6 @@ export class AccountAbstractionKeyring implements Keyring {
       console.log('Set callgas limit: ', ethBaseUserOp.callGasLimit);
     }
 
-    ethBaseUserOp.maxFeePerGas = '0x16';
-
     let pmPayload: (
       | {
           value: string;
