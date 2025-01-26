@@ -44,7 +44,7 @@ import {
   DUMMY_SIGNATURE,
   getDummyPaymasterAndData,
 } from './constants/dummy-values';
-import { encrypt, decrypt } from './encryption';
+import { decrypt, encrypt } from './encryption';
 import { logger } from './logger';
 import { InternalMethod } from './permissions';
 import { SecurePrivateKey } from './secureKey';
@@ -58,11 +58,11 @@ import { CaipNamespaces, isEvmChain, toCaipChainId } from './utils/caip';
 import { getUserOperationHash } from './utils/ecdsa';
 import { getSigner, provider } from './utils/ethers';
 import {
+  fetchWithRetry,
+  getSignerPrivateKey,
   isUniqueAddress,
   runSensitive,
   throwError,
-  getSignerPrivateKey,
-  fetchWithRetry,
 } from './utils/util';
 
 const unsupportedAAMethods = [
@@ -735,10 +735,10 @@ export class AccountAbstractionKeyring implements Keyring {
     let preVerificationGasReq = calcPreVerificationGas(partialUserOp);
 
     // TODO: (replace) the public bundler on sepolia expects more preVerifGas
-    if (chainId.toString() === '11155111') {
-      preVerificationGasReq += 10000;
-    }
-    preVerificationGasReq *= overrides?.preVerificationGasReqMultiplier ?? 1;
+    // if (chainId.toString() === '11155111') {
+    preVerificationGasReq += 10_000;
+    // }
+    preVerificationGasReq *= overrides?.preVerificationGasReqMultiplier ?? 3;
 
     // check if calculated preVerificationGas is adequate by calling eth_estimateUserOperationGas on the bundler here
 
@@ -797,6 +797,8 @@ export class AccountAbstractionKeyring implements Keyring {
       console.log('Set callgas limit: ', ethBaseUserOp.callGasLimit);
     }
 
+    ethBaseUserOp.maxFeePerGas = '0x16';
+
     let pmPayload: (
       | {
           value: string;
@@ -850,7 +852,7 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
-    console.log(signedUserOp);
+    console.log('Signed: ', signedUserOp);
 
     ethBaseUserOp.signature = signedUserOp!;
 
@@ -859,7 +861,7 @@ export class AccountAbstractionKeyring implements Keyring {
       await entryPoint.getAddress(),
       chainConfig.bundlerUrl,
     );
-    console.log(bundlerRes);
+
     if (!bundlerRes.result) {
       console.log(bundlerRes.error);
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -1029,6 +1031,7 @@ export class AccountAbstractionKeyring implements Keyring {
     // for v0.7 EntryPoint this field is not in the UserOperation RPC request
     const { chainId } = await provider.getNetwork();
     const chainConfig = this.#getChainConfig(Number(chainId));
+
     if (chainConfig?.version !== '0.6.0') {
       // @DEV needed for v0.7 operations
       delete userOp.paymasterAndData;
@@ -1038,6 +1041,13 @@ export class AccountAbstractionKeyring implements Keyring {
         userOp.factoryData = `0x${String(userOp.initCode).substring(42)}`;
       }
     }
+
+    userOp.callGasLimit = '0x0';
+    userOp.verificationGasLimit = '0x0';
+    userOp.maxPriorityFeePerGas = '0x0';
+    userOp.preVerificationGas = '0x0';
+
+    console.log('estimate: ', JSON.stringify(userOp));
 
     const requestBody = {
       method: 'eth_estimateUserOperationGas',
@@ -1055,7 +1065,7 @@ export class AccountAbstractionKeyring implements Keyring {
       });
 
       const data = await response.json();
-      console.log('Gas Estimation Response:', JSON.stringify(data));
+      console.log('Gas Estimation Response', JSON.stringify(data));
       if (data.error?.message) {
         console.error(
           'JSON ESTIMATE: ',
