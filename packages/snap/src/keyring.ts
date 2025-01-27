@@ -813,6 +813,8 @@ export class AccountAbstractionKeyring implements Keyring {
     // for general tx show general dialog
     const sourceAddress = address; // The address sending the transaction
 
+    console.log('final eth base userop: ', ethBaseUserOp);
+
     const result = await snap.request({
       method: 'snap_dialog',
       params: {
@@ -1042,7 +1044,6 @@ export class AccountAbstractionKeyring implements Keyring {
 
     userOp.callGasLimit = '0x0';
     userOp.verificationGasLimit = '0x0';
-    userOp.maxPriorityFeePerGas = '0x0';
     userOp.preVerificationGas = '0x0';
 
     console.log('estimate: ', JSON.stringify(userOp));
