@@ -279,7 +279,6 @@ export class AccountAbstractionKeyring implements Keyring {
     const { chainId } = await provider.getNetwork();
     const signer = getSigner(await secureKey.getPrivateKey());
 
-    // get factory contract by chain
     const aaFactory = await this.#getAAFactory(Number(chainId), signer);
     logger.info('[Snap] AA Factory Contract Address: ', aaFactory.target);
 
@@ -423,7 +422,6 @@ export class AccountAbstractionKeyring implements Keyring {
       const scope = request.scope ? request.scope : params[0].scope;
       let selectedWallet;
 
-      // @DEV todo create one uniform way of retrieving the wallet addr
       try {
         selectedWallet = this.#getWalletByAddress(request.account);
       } catch (error) {
@@ -585,10 +583,6 @@ export class AccountAbstractionKeyring implements Keyring {
 
       case EthMethod.PatchUserOperation: {
         const [userOp] = params as [EthUserOperation];
-        console.log(
-          'Metamask sent UserOperation back for patching',
-          JSON.stringify(userOp),
-        );
         return await this.#patchUserOperation(userOp);
       }
 
@@ -735,9 +729,7 @@ export class AccountAbstractionKeyring implements Keyring {
     let preVerificationGasReq = calcPreVerificationGas(partialUserOp);
 
     // TODO: (replace) the public bundler on sepolia expects more preVerifGas
-    // if (chainId.toString() === '11155111') {
     preVerificationGasReq += 10_000;
-    // }
     preVerificationGasReq *= overrides?.preVerificationGasReqMultiplier ?? 3;
 
     // check if calculated preVerificationGas is adequate by calling eth_estimateUserOperationGas on the bundler here
@@ -811,10 +803,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
     // For Funds transfer (specific tokens) modify dialog accordingly,
     // for general tx show general dialog
-    const sourceAddress = address; // The address sending the transaction
-
-    console.log('final eth base userop: ', ethBaseUserOp);
-
+    // The address sending the transaction
     const result = await snap.request({
       method: 'snap_dialog',
       params: {
@@ -825,7 +814,7 @@ export class AccountAbstractionKeyring implements Keyring {
           heading('Transaction Confirmation'),
           text('Please review the following transaction details:'),
           text('From (Source Address):'),
-          copyable(sourceAddress),
+          copyable(address),
           text('To (Target Address):'),
           copyable(to),
           text('Transaction Value:'),
@@ -852,7 +841,6 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
-    console.log('Signed: ', signedUserOp);
 
     ethBaseUserOp.signature = signedUserOp!;
 
@@ -985,8 +973,7 @@ export class AccountAbstractionKeyring implements Keyring {
     console.log('UserOperation estimated: ', estimate);
 
     return {
-      // TODO paymasterAndData | No paymasterAndData for v.07 allowed but required in docs (?)
-      // TODO paymasterAndData needs to be submitted to the Chain API
+      // TODO Currently, no paymaster defined
       paymasterAndData: '0x',
       callGasLimit: estimate.callGasLimit, // ~360k gas
       verificationGasLimit: estimate.verificationGasLimit, // ~60k gas
@@ -1016,7 +1003,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
       const data = await response.json();
       console.log('Response:', JSON.stringify(data));
-      return data; // Return the data
+      return data;
     } catch (error) {
       console.error('Error:', error);
       throw error;
@@ -1028,12 +1015,11 @@ export class AccountAbstractionKeyring implements Keyring {
     entryPointAddress: any,
     bundlerUrl: string,
   ): Promise<IUserOpGasEstimate> {
-    // for v0.7 EntryPoint this field is not in the UserOperation RPC request
     const { chainId } = await provider.getNetwork();
     const chainConfig = this.#getChainConfig(Number(chainId));
 
+    // @DEV initCode is split up in v0.7 operations
     if (chainConfig?.version !== '0.6.0') {
-      // @DEV needed for v0.7 operations
       delete userOp.paymasterAndData;
 
       if (userOp.initCode.length >= 42) {
@@ -1045,8 +1031,6 @@ export class AccountAbstractionKeyring implements Keyring {
     userOp.callGasLimit = '0x0';
     userOp.verificationGasLimit = '0x0';
     userOp.preVerificationGas = '0x0';
-
-    console.log('estimate: ', JSON.stringify(userOp));
 
     const requestBody = {
       method: 'eth_estimateUserOperationGas',
@@ -1064,10 +1048,9 @@ export class AccountAbstractionKeyring implements Keyring {
       });
 
       const data = await response.json();
-      console.log('Gas Estimation Response', JSON.stringify(data));
       if (data.error?.message) {
         console.error(
-          'JSON ESTIMATE: ',
+          'Estimation failed: ',
           JSON.stringify(requestBody),
           requestBody,
           bundlerUrl,
@@ -1159,57 +1142,6 @@ export class AccountAbstractionKeyring implements Keyring {
 
     return signature;
   }
-
-  /**
-   * Draft method
-   * --
-   * The transaction submitted to MM Flask via prepareUserOperation and patchUserOperation contains
-   * a paymasterAndData field which likely leads to a AA23 error. If userOP is sent by the snap,
-   * it succeeds internally, but the Metamask Flask UI labels it as Failed - as it most likely tries to
-   * send it itself, which does not succeed due to AA23 and the way things are build on the MM side.
-   * @param address
-   * @param userOp
-   * @param chainId
-   * @param signer
-   */
-  // async #signAndSendUserOperationV07(
-  //   address: string,
-  //   userOp: EthUserOperation,
-  // ): Promise<string | undefined> {
-  //   const wallet = this.#getWalletByAddress(address);
-  //   const decryptedPrivateKey = await decrypt(wallet.encryptedPrivateKey);
-  //   const secureKey = new SecurePrivateKey(decryptedPrivateKey);
-  //   const EP = await entryPoint.getAddress();
-  //   const { chainId } = await provider.getNetwork();
-  //   const entryPoint = await this.#getEntryPoint(
-  //     Number(chainId),
-  //     new ethers.Wallet(decryptedPrivateKey),
-  //   );
-  //
-  //   userOp.signature = '0x';
-  //   delete userOp.paymasterAndData;
-  //
-  //   console.log('Hashing UserOperation: ', JSON.stringify(userOp));
-  //
-  //   const userOpHash = getUserOperationHash(userOp, EP, chainId.toString(10));
-  //   const signature = await secureKey.sign(ethers.getBytes(userOpHash));
-  //   secureKey.destroy();
-  //   console.log('UserOp:', userOp);
-  //   console.log('EntryPoint:', EP);
-  //   console.log('Generated signature:', signature);
-
-  // const res = await this.#sendUserOperation(
-  //   {
-  //     ...userOp,
-  //     signature,
-  //   },
-  //   EP,
-  //   'https://bundler-hc.sepolia.boba.network',
-  // );
-  // console.log('Broadcasted UP --> ', res);
-
-  // return signature;
-  // }
 
   async #getAAFactory(chainId: number, signer: ethers.Wallet) {
     if (!this.#isSupportedChain(chainId)) {

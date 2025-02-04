@@ -1,6 +1,5 @@
 import { bytesToHex, hexToBytes } from '@metamask/utils';
 
-// Changed from 80 to 32 bytes (256 bits) for AES-GCM
 const ENCRYPTION_KEY_LENGTH = 32;
 
 export async function getOrCreateEncryptionKey(): Promise<Uint8Array> {
@@ -9,14 +8,11 @@ export async function getOrCreateEncryptionKey(): Promise<Uint8Array> {
       method: 'snap_manageState',
       params: { operation: 'get' },
     });
-    // If we have a stored key, verify it's valid before returning
     if (state?.encryptionKey) {
       const key = hexToBytes(state.encryptionKey as string);
-      // Verify key length
       if (key.length !== ENCRYPTION_KEY_LENGTH) {
         throw new Error('Invalid stored key length');
       }
-      // verify it's valid for AES-GCM
       await crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, [
         'encrypt',
       ]);
