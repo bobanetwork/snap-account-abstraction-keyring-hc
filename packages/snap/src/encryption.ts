@@ -47,7 +47,6 @@ export async function getOrCreateEncryptionKey(): Promise<Uint8Array> {
 
     return key;
   } catch (error) {
-    console.error('Error in getOrCreateEncryptionKey:', error);
     throw error;
   }
 }

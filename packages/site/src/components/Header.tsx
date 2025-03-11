@@ -72,7 +72,6 @@ export const Header = () => {
         payload: installedSnap,
       });
     } catch (error) {
-      console.error(error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
     }
   };

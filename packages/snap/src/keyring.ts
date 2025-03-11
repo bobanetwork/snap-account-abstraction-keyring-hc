@@ -442,9 +442,6 @@ export class AccountAbstractionKeyring implements Keyring {
         result: response,
       };
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error('Input validation failed:', error.errors);
-      }
       throw error; // Re-throw the error for higher-level error handling
     }
   }
@@ -585,10 +582,6 @@ export class AccountAbstractionKeyring implements Keyring {
 
       case EthMethod.PatchUserOperation: {
         const [userOp] = params as [EthUserOperation];
-        console.log(
-          'Metamask sent UserOperation back for patching',
-          JSON.stringify(userOp),
-        );
         return await this.#patchUserOperation(userOp);
       }
 
@@ -645,7 +638,6 @@ export class AccountAbstractionKeyring implements Keyring {
           16,
         )}`;
       }
-      console.log('Using Nonce: ', nonce);
       if (!wallet.chains[chainId.toString()]) {
         wallet.chains[chainId.toString()] = true;
         await this.#saveState();
@@ -687,13 +679,11 @@ export class AccountAbstractionKeyring implements Keyring {
       console.error(error);
     }
 
-    console.log('Init gas req');
     // eslint-disable-next-line prefer-template
     let initGasReq;
     if (initCode === null || initCode === '0x') {
       initGasReq = BigInt(0);
     } else {
-      console.log('Estimating initCode related calldata..');
       const deployerCallDataReq = `0x${initCode.substring(42)}`;
       initGasReq = await provider.estimateGas({
         to: initCode.substring(0, 42),
@@ -748,7 +738,6 @@ export class AccountAbstractionKeyring implements Keyring {
       signature: DUMMY_SIGNATURE,
     };
 
-    console.log(ethBaseUserOp);
     const estimatedGas = await this.#estimateUserOpGas(
       ethBaseUserOp,
       await entryPoint.getAddress(),
@@ -765,10 +754,6 @@ export class AccountAbstractionKeyring implements Keyring {
           : preVerificationGasReq
         ).toString(16),
       );
-      console.log(
-        'Preverification gas set: ',
-        ethBaseUserOp.preVerificationGas,
-      );
     }
     if (estimatedGas.verificationGasLimit) {
       const verificationGasLimitBundler = parseInt(
@@ -781,10 +766,6 @@ export class AccountAbstractionKeyring implements Keyring {
           : verificationGasLimitReq
         ).toString(16),
       );
-      console.log(
-        'Set verificationGasLimit: ',
-        ethBaseUserOp.verificationGasLimit,
-      );
     }
     if (estimatedGas.callGasLimit) {
       const callGasLimitBundler = parseInt(estimatedGas.callGasLimit, 16);
@@ -794,7 +775,6 @@ export class AccountAbstractionKeyring implements Keyring {
           : callGasLimitReq
         ).toString(16),
       );
-      console.log('Set callgas limit: ', ethBaseUserOp.callGasLimit);
     }
 
     let pmPayload: (
@@ -811,10 +791,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
     // For Funds transfer (specific tokens) modify dialog accordingly,
     // for general tx show general dialog
-    const sourceAddress = address; // The address sending the transaction
-
-    console.log('final eth base userop: ', ethBaseUserOp);
-
+    // The address sending the transaction
     const result = await snap.request({
       method: 'snap_dialog',
       params: {
@@ -825,7 +802,7 @@ export class AccountAbstractionKeyring implements Keyring {
           heading('Transaction Confirmation'),
           text('Please review the following transaction details:'),
           text('From (Source Address):'),
-          copyable(sourceAddress),
+          copyable(address),
           text('To (Target Address):'),
           copyable(to),
           text('Transaction Value:'),
@@ -852,7 +829,6 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     const signedUserOp = await this.#signUserOperation(address, ethBaseUserOp);
-    console.log('Signed: ', signedUserOp);
 
     ethBaseUserOp.signature = signedUserOp!;
 
@@ -863,7 +839,6 @@ export class AccountAbstractionKeyring implements Keyring {
     );
 
     if (!bundlerRes.result) {
-      console.log(bundlerRes.error);
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`UserOp Failed:${bundlerRes.error.message}`);
     }
@@ -973,16 +948,12 @@ export class AccountAbstractionKeyring implements Keyring {
       throwError(`Invalid Chain Configuration for ${Number(chainId)}`);
     }
 
-    console.log('Estimating User Operation: ', JSON.stringify(userOperation));
-
     // TODO estimation is done without the paymasterAndData field
     const estimate = await this.#estimateUserOpGas(
       userOperation,
       chainConfig.entryPoint,
       chainConfig.bundlerUrl,
     );
-
-    console.log('UserOperation estimated: ', estimate);
 
     return {
       // TODO paymasterAndData | No paymasterAndData for v.07 allowed but required in docs (?)
@@ -1014,11 +985,8 @@ export class AccountAbstractionKeyring implements Keyring {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-      console.log('Response:', JSON.stringify(data));
-      return data; // Return the data
+      return await response.json(); // Return the data
     } catch (error) {
-      console.error('Error:', error);
       throw error;
     }
   }
@@ -1046,8 +1014,6 @@ export class AccountAbstractionKeyring implements Keyring {
     userOp.verificationGasLimit = '0x0';
     userOp.preVerificationGas = '0x0';
 
-    console.log('estimate: ', JSON.stringify(userOp));
-
     const requestBody = {
       method: 'eth_estimateUserOperationGas',
       id: 1,
@@ -1064,14 +1030,7 @@ export class AccountAbstractionKeyring implements Keyring {
       });
 
       const data = await response.json();
-      console.log('Gas Estimation Response', JSON.stringify(data));
       if (data.error?.message) {
-        console.error(
-          'JSON ESTIMATE: ',
-          JSON.stringify(requestBody),
-          requestBody,
-          bundlerUrl,
-        );
         // this might be a bundler related message during estimation, we must not continue and need to stop the user here
         throw new Error(data.error.message);
       }
@@ -1088,7 +1047,6 @@ export class AccountAbstractionKeyring implements Keyring {
           : undefined,
       };
     } catch (error) {
-      console.error('Error:', error);
       throw error;
     }
   }
