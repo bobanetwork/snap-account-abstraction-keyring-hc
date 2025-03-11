@@ -19,7 +19,7 @@ import {
   StyledBox,
 } from '../components/styledComponents';
 import { defaultSnapOrigin } from '../config';
-import { MetaMaskContext, MetamaskActions } from '../hooks';
+import { MetamaskActions, MetaMaskContext } from '../hooks';
 import { InputType } from '../types';
 import type { KeyringState } from '../utils';
 import { connectSnap, getSnap, loadAccountConnected } from '../utils';
@@ -224,19 +224,8 @@ const Index = () => {
     if (paymasterOverride) {
       method = 'eth_sendUserOpBobaPM';
     }
-    console.log({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId: defaultSnapOrigin,
-        request: {
-          method,
-          params: [transactionDetails],
-          id: snapState.accounts[0]?.id ?? '',
-        },
-      },
-    });
 
-    const submitRes = await window.ethereum.request({
+    return await window.ethereum.request({
       method: 'wallet_invokeSnap',
       params: {
         snapId: defaultSnapOrigin,
@@ -247,8 +236,6 @@ const Index = () => {
         },
       },
     });
-
-    return submitRes;
   };
 
   const checkDepositOnPaymaster = async () => {
@@ -289,10 +276,7 @@ const Index = () => {
 
     const depositAmount = decodedData[0];
 
-    console.log('deposit amount', depositAmount);
-
-    const hasSufficientDeposit = depositAmount >= ethers.parseEther('1');
-    return hasSufficientDeposit;
+    return depositAmount >= ethers.parseEther('1');
   };
 
   // eslint-disable-next-line consistent-return
@@ -363,11 +347,8 @@ const Index = () => {
       params: [callObject, 'latest'],
     });
     const allowanceBigNumber = ethers.toBigInt(allowance as any);
-    console.log('allowance ', allowanceBigNumber);
 
-    const hasSufficientApproval =
-      allowanceBigNumber >= ethers.parseEther('50000');
-    return hasSufficientApproval;
+    return allowanceBigNumber >= ethers.parseEther('50000');
   };
 
   const approveBobaSpend = async () => {
@@ -407,7 +388,6 @@ const Index = () => {
     if (bobaPaymasterSelected) {
       const hasSufficientApproval = await checkApproval();
       if (!hasSufficientApproval) {
-        console.log('Does not have sufficient approval');
         await approveBobaSpend();
 
         // TODO: wait here before the change reflects on-chain
@@ -501,7 +481,6 @@ const Index = () => {
         payload: installedSnap,
       });
     } catch (error) {
-      console.error(error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
     }
   };

@@ -14,17 +14,14 @@ async function main() {
 
   const VerifyingPaymasterFactory = new VerifyingPaymaster__factory(deployer!);
 
-  const contract = await VerifyingPaymasterFactory.deploy(
+  await VerifyingPaymasterFactory.deploy(
     // use local entrypoint when deployed (assuming network local), otherwise sepolia
     process.env.LOCAL_ENTRYPOINT ??
       '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
     deployer!.address,
   );
-
-  console.log('Verifying Signer deployed to:', contract.target);
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch(() => {
   process.exitCode = 1;
 });

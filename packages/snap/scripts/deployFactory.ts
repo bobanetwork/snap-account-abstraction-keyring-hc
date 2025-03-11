@@ -14,13 +14,11 @@ async function main() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const SimpleAccountFactory = new SimpleAccountFactory__factory(deployer!);
 
-  const contract = await SimpleAccountFactory.deploy(
+  await SimpleAccountFactory.deploy(
     // use local entrypoint when deployed (assuming network local), otherwise sepolia
     process.env.LOCAL_ENTRYPOINT ??
       '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
   );
-
-  console.log('SimpleAccountFactory deployed to:', contract.target);
 }
 
 main().catch((error) => {
