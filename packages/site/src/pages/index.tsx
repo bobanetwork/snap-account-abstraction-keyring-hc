@@ -19,7 +19,7 @@ import {
   StyledBox,
 } from '../components/styledComponents';
 import { defaultSnapOrigin } from '../config';
-import { MetaMaskContext, MetamaskActions } from '../hooks';
+import { MetamaskActions, MetaMaskContext } from '../hooks';
 import { InputType } from '../types';
 import type { KeyringState } from '../utils';
 import { connectSnap, getSnap, loadAccountConnected } from '../utils';
@@ -97,7 +97,6 @@ const Index = () => {
 
   const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
-
   useEffect(() => {
     /**
      * Return the current state of the snap.
@@ -225,19 +224,8 @@ const Index = () => {
     if (paymasterOverride) {
       method = 'eth_sendUserOpBobaPM';
     }
-    console.log({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId: defaultSnapOrigin,
-        request: {
-          method,
-          params: [transactionDetails],
-          id: snapState.accounts[0]?.id ?? '',
-        },
-      },
-    });
 
-    const submitRes = await window.ethereum.request({
+    return await window.ethereum.request({
       method: 'wallet_invokeSnap',
       params: {
         snapId: defaultSnapOrigin,
@@ -248,8 +236,6 @@ const Index = () => {
         },
       },
     });
-
-    return submitRes;
   };
 
   const checkDepositOnPaymaster = async () => {
@@ -290,10 +276,7 @@ const Index = () => {
 
     const depositAmount = decodedData[0];
 
-    console.log('deposit amount', depositAmount);
-
-    const hasSufficientDeposit = depositAmount >= ethers.parseEther('1');
-    return hasSufficientDeposit;
+    return depositAmount >= ethers.parseEther('1');
   };
 
   // eslint-disable-next-line consistent-return
@@ -364,11 +347,8 @@ const Index = () => {
       params: [callObject, 'latest'],
     });
     const allowanceBigNumber = ethers.toBigInt(allowance as any);
-    console.log('allowance ', allowanceBigNumber);
 
-    const hasSufficientApproval =
-      allowanceBigNumber >= ethers.parseEther('50000');
-    return hasSufficientApproval;
+    return allowanceBigNumber >= ethers.parseEther('50000');
   };
 
   const approveBobaSpend = async () => {
@@ -401,14 +381,13 @@ const Index = () => {
 
   const sendBobaTx = async () => {
     if (!snapState?.accounts || !selectedAccount) {
-      throw new Error('Source account not connected');
+      throw new Error('Please connect your wallet first!');
     }
 
     // Paymaster Setup steps (only first time or when required)
     if (bobaPaymasterSelected) {
       const hasSufficientApproval = await checkApproval();
       if (!hasSufficientApproval) {
-        console.log('Does not have sufficient approval');
         await approveBobaSpend();
 
         // TODO: wait here before the change reflects on-chain
@@ -471,17 +450,6 @@ const Index = () => {
     if (bobaPaymasterSelected) {
       method = 'eth_sendUserOpBobaPM';
     }
-    console.log({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId: defaultSnapOrigin,
-        request: {
-          method,
-          params: [transactionDetails],
-          id: snapState.accounts[0]?.id ?? '',
-        },
-      },
-    });
 
     const submitRes = await window.ethereum.request({
       method: 'wallet_invokeSnap',
@@ -513,7 +481,6 @@ const Index = () => {
         payload: installedSnap,
       });
     } catch (error) {
-      console.error(error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
     }
   };
@@ -521,7 +488,8 @@ const Index = () => {
   const accountManagementMethods = [
     {
       name: 'Create account',
-      description: 'Create a 4337 account using an admin private key',
+      description:
+        'Create a 4337 account using an admin private key and a salt, which you need to write down or store to re-create the wallet.',
       inputs: [
         {
           id: 'create-account-private-key',
@@ -534,7 +502,7 @@ const Index = () => {
         },
         {
           id: 'create-account-salt',
-          title: 'Salt (optional)',
+          title: 'Salt (optional, write it down)',
           value: salt,
           type: InputType.TextField,
           placeholder: 'E.g. 0x123',
@@ -551,7 +519,7 @@ const Index = () => {
     {
       name: 'Create account (Deterministic)',
       description:
-        'Create a 4337 account using a deterministic key generated through the snap',
+        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
       inputs: [
         {
           id: 'create-account-deterministic',
@@ -610,15 +578,15 @@ const Index = () => {
           onChange: (event: any) =>
             setTransferAmount(event.currentTarget.value),
         },
-        {
-          id: 'transfer-fund-boba-paymaster',
-          title: 'Select boba as paymaster.',
-          value: bobaPaymasterSelected,
-          type: InputType.CheckBox,
-          placeholder: 'E.g. 0.00',
-          onChange: (event: any) =>
-            setBobaPaymasterSelected(event.target.checked),
-        },
+        // {
+        //   id: 'transfer-fund-boba-paymaster',
+        //   title: 'Select boba as paymaster.',
+        //   value: bobaPaymasterSelected,
+        //   type: InputType.CheckBox,
+        //   placeholder: 'E.g. 0.00',
+        //   onChange: (event: any) =>
+        //     setBobaPaymasterSelected(event.target.checked),
+        // },
       ],
       action: {
         callback: async () => await sendBobaTx(),

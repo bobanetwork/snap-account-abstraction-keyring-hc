@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 
 export const DUMMY_SIGNATURE =
   '0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c';
+// https://docs.metamask.io/snaps/reference/keyring-api/chain-methods/
+export const DUMMY_PAYMASTER = `0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000`;
 
 /**
  * Get the dummy paymaster and data.
@@ -12,7 +14,7 @@ export const DUMMY_SIGNATURE =
  */
 export function getDummyPaymasterAndData(paymasterAddress?: string): string {
   if (!paymasterAddress) {
-    return '0x';
+    return DUMMY_PAYMASTER;
   }
 
   const encodedValidUntilAfter = stripHexPrefix(

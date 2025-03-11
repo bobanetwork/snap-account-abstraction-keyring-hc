@@ -7,7 +7,7 @@ export const AA_CONFIG = {
     simpleAccountFactory: '0x9406cc6185a346906296840746125a0e44976454',
     bobaPaymaster: '0x',
     bobaToken: '0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7',
-    bundlerUrl: '',
+    bundlerUrl: 'https://bundler-hc.mainnet.boba.network',
   },
   // TESTNETS
   [CHAIN_IDS.SEPOLIA]: {
