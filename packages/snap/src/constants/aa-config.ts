@@ -21,7 +21,7 @@ export const AA_CONFIG = {
   [CHAIN_IDS.BOBA_SEPOLIA]: {
     version: '0.7.0',
     entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
-    simpleAccountFactory: '0x9aC904d8DfeA0866aB341208700dCA9207834DeB',
+    simpleAccountFactory: '0x584960A850D74400280c436a07BE738C1c96195B',
     bobaPaymaster: '0x8223388f7aF211d84289783ed97ffC5Fefa14256',
     bobaToken: '0x4200000000000000000000000000000000000023',
     // bundlerUrl: 'https://bundler.sepolia.boba.network/rpc', "We shouldn't change it unconditionally because some people might want to use it for standard AA. I don't know if it's easier to fork it or add a configuration flag"
