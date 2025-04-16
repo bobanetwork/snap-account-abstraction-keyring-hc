@@ -1,9 +1,9 @@
 import type { FunctionComponent, ReactNode } from 'react';
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
-import { Footer, Header, AlertBanner, AlertType } from './components';
+import { Footer, Header } from './components';
+import { VersionBanner } from './components/VersionBanner';
 import { GlobalStyle } from './config/theme';
 
 const Wrapper = styled.div`
@@ -12,17 +12,25 @@ const Wrapper = styled.div`
   width: 100%;
   min-height: 100vh;
   max-width: 100vw;
+  background: ${({ theme }) => theme.colors.background?.default};
 `;
 
-const BannerWrapper = styled.div`
-  padding-top: 25px;
-  padding-left: 5%;
-  padding-right: 5%;
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 2rem;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    padding: 0 1rem;
+  }
 `;
 
 export type AppProps = {
   children: ReactNode;
 };
+
+const StyledGlobalStyle = GlobalStyle as any;
 
 export const App: FunctionComponent<AppProps> = ({ children }) => {
   // Make sure we are on a browser, otherwise we can't use window.ethereum.
@@ -32,22 +40,13 @@ export const App: FunctionComponent<AppProps> = ({ children }) => {
 
   return (
     <>
-      <Helmet>
-        <meta charSet="utf-8" />
-        <title>Account Abstraction Snap</title>
-      </Helmet>
-      <GlobalStyle />
+      <StyledGlobalStyle />
       <Wrapper>
-        <BannerWrapper style={{ display: 'none' }}>
-          <AlertBanner
-            title={
-              "This is a developer tool for testing purposes. Don't use it to store real assets. Use with caution."
-            }
-            alertType={AlertType.Failure}
-          />
-        </BannerWrapper>
-        <Header />
-        {children}
+        <ContentWrapper>
+          <Header />
+          <VersionBanner />
+          {children}
+        </ContentWrapper>
         <Footer />
       </Wrapper>
     </>

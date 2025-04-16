@@ -1,20 +1,101 @@
+/* eslint-disable*/
 import { type KeyringAccount } from '@metamask/keyring-api';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import React, { useState } from 'react';
+import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
+import styled from 'styled-components';
 
-import { MethodButton } from './Buttons';
-import { CopyableItem } from './CopyableItem';
-import {
-  AccountContainer,
-  AccountTitleContainer,
-  AccountTitle,
-  AccountTitleIconContainer,
-  AccountRow,
-  AccountRowTitle,
-  AccountRowValue,
-  StyledIcon,
-} from './styledComponents';
+const AccountCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 12px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const AccountHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const AccountInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const AccountDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const AccountName = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text?.default};
+`;
+
+const AddressContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: ${({ theme }) => theme.colors.text?.muted};
+  font-size: 14px;
+`;
+
+const CopyButton = styled.button`
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.text?.muted};
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const TypeBadge = styled.span`
+  background: ${({ theme }) => theme.colors.background?.alternative};
+  color: ${({ theme }) => theme.colors.text?.alternative};
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.error?.default};
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  ${AccountCard}:hover & {
+    opacity: 0.6;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const truncateAddress = (address: string) => {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
 export const Account = ({
   account,
@@ -27,79 +108,50 @@ export const Account = ({
   handleDelete: (accountId: string) => Promise<void>;
   count: number;
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(account.address);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const isCurrentAccount =
+    currentAccount?.address?.toLowerCase() === account.address.toLowerCase();
 
   return (
-    <AccountContainer>
-      <AccountTitleContainer onClick={() => setIsCollapsed(!isCollapsed)}>
-        <AccountTitle>
-          Account {count + 1}
-          {currentAccount?.address &&
-          currentAccount?.address?.toLowerCase() ===
-            account.address.toLowerCase() ? (
-            <StyledIcon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
+    <AccountCard>
+      <AccountHeader>
+        <AccountInfo>
+          <Jazzicon diameter={40} seed={jsNumberForAddress(account.address)} />
+          <AccountDetails>
+            <AccountName>
+              Account {count + 1}
+              {isCurrentAccount && ' (Active)'}
+            </AccountName>
+            <AddressContainer>
+              {truncateAddress(account.address)}
+              <CopyButton
+                onClick={handleCopy}
+                title={copySuccess ? 'Copied!' : 'Copy address'}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </StyledIcon>
-          ) : (
-            <></>
-          )}
-        </AccountTitle>
-        <AccountTitleIconContainer>
-          {isCollapsed ? (
-            <ExpandMoreIcon fontSize="large" />
-          ) : (
-            <ExpandLessIcon fontSize="large" />
-          )}
-        </AccountTitleIconContainer>
-      </AccountTitleContainer>
-      {!isCollapsed && (
-        <>
-          {/* <AccountRow>
-            <AccountRowTitle>ID</AccountRowTitle>
-            <CopyableItem value={account.id} />
-          </AccountRow> */}
-          <AccountRow>
-            <AccountRowTitle>Address</AccountRowTitle>
-            <CopyableItem value={account.address} />
-          </AccountRow>
-          <AccountRow>
-            <AccountRowTitle>Type</AccountRowTitle>
-            <AccountRowValue>{account.type}</AccountRowValue>
-          </AccountRow>
-          {/* <AccountRow>
-            <AccountRowTitle>Account Supported Methods</AccountRowTitle>
-            <ul style={{ padding: '0px 0px 0px 16px' }}>
-              {account.methods.map((method) => (
-                <AccountRowValue key={`account-${account.id}-method-${method}`}>
-                  <li>{method}</li>
-                </AccountRowValue>
-              ))}
-            </ul>
-          </AccountRow> */}
-          <AccountRow alignItems="flex-end">
-            <MethodButton
-              width="30%"
-              margin="8px 0px 8px 8px"
-              onClick={async (): Promise<void> => {
-                await handleDelete(account.id);
-              }}
-              label="Delete"
-            />
-          </AccountRow>
-        </>
-      )}
-    </AccountContainer>
+                <ContentCopyIcon fontSize="small" />
+              </CopyButton>
+            </AddressContainer>
+            <AddressContainer>
+              <TypeBadge>{account.type}</TypeBadge>
+            </AddressContainer>
+          </AccountDetails>
+        </AccountInfo>
+        <DeleteButton
+          onClick={() => {
+            handleDelete(account.id);
+          }}
+          title="Delete account"
+        >
+          <DeleteOutlineIcon />
+        </DeleteButton>
+      </AccountHeader>
+    </AccountCard>
   );
 };

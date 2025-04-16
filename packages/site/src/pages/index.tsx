@@ -1,5 +1,5 @@
 import type { KeyringAccount, KeyringRequest } from '@metamask/keyring-api';
-import { KeyringSnapRpcClient } from '@metamask/keyring-api';
+import { KeyringSnapRpcClient } from '@metamask/keyring-snap-client';
 import Grid from '@mui/material/Grid';
 import { ethers, parseUnits } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
@@ -78,11 +78,13 @@ const TOKEN_ADDR: any = {
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
+  console.log(`snapState`, snapState);
   // Is not a good practice to store sensitive data in the state of
   // a component but for this case it should be ok since this is an
   // internal development and testing tool.
   const [privateKey, setPrivateKey] = useState<string | null>();
   const [salt, setSalt] = useState<string | null>();
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [bobaPaymasterSelected, setBobaPaymasterSelected] = useState<
     boolean | null
   >();
@@ -162,7 +164,9 @@ const Index = () => {
   }, [state.installedSnap]);
 
   const syncAccounts = async () => {
+    console.log(`🚶‍♂️ fetching account list`);
     const accounts = await client.listAccounts();
+    console.log(`🔒 account list goes`, accounts);
     setSnapState({
       ...snapState,
       accounts,
@@ -487,6 +491,24 @@ const Index = () => {
 
   const accountManagementMethods = [
     {
+      name: 'Create account (Deterministic)',
+      description:
+        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
+      inputs: [
+        {
+          id: 'create-account-deterministic',
+          title: 'Counter',
+          value: counter.toString(),
+          type: InputType.TextField,
+        },
+      ],
+      action: {
+        callback: async () => await createAccountDeterministic(),
+        label: 'Create Account',
+      },
+      successMessage: 'Smart Contract Account Created',
+    },
+    {
       name: 'Create account',
       description:
         'Create a 4337 account using an admin private key and a salt, which you need to write down or store to re-create the wallet.',
@@ -513,24 +535,6 @@ const Index = () => {
         callback: async () => await createAccount(),
         label: `Create Account`,
         disabled: isLoading,
-      },
-      successMessage: 'Smart Contract Account Created',
-    },
-    {
-      name: 'Create account (Deterministic)',
-      description:
-        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
-      inputs: [
-        {
-          id: 'create-account-deterministic',
-          title: 'Counter',
-          value: counter.toString(),
-          type: InputType.TextField,
-        },
-      ],
-      action: {
-        callback: async () => await createAccountDeterministic(),
-        label: 'Create Account',
       },
       successMessage: 'Smart Contract Account Created',
     },
@@ -647,17 +651,19 @@ const Index = () => {
           >
             <Grid item xs={8} sm={4} md={2}>
               <DividerTitle>Methods</DividerTitle>
+              <Divider />
               <Accordion items={accountManagementMethods} />
             </Grid>
             <Grid item xs={4} sm={2} md={1}>
-              <Divider />
               <DividerTitle>Accounts</DividerTitle>
+              <Divider />
               <AccountList
                 currentAccount={selectedAccount as any}
                 accounts={snapState.accounts}
                 handleDelete={async (accountIdToDelete) => {
                   await client.deleteAccount(accountIdToDelete);
                   const accounts = await client.listAccounts();
+                  console.log(` 🚶‍♂️ accounts`, accounts);
                   setSnapState({
                     ...snapState,
                     accounts,

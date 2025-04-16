@@ -1,6 +1,6 @@
 {
   "name": "@bobanetwork/snap-account-abstraction-keyring-hc",
-  "version": "1.1.19",
+  "version": "1.1.20",
   "description": "An account abstraction keyring snap that integrates with MetaMask accounts on Boba Network",
   "keywords": [
     "metamask",
@@ -10,13 +10,13 @@
     "account abstraction",
     "4337"
   ],
-  "homepage": "https://github.com/bobanetwork/snap-account-abstraction-keyring#readme",
+  "homepage": "https://github.com/bobanetwork/snap-account-abstraction-keyring-hc#readme",
   "bugs": {
-    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring/issues"
+    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring-hc/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring.git"
+    "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring-hc.git"
   },
   "license": "(MIT-0 OR Apache-2.0)",
   "main": "dist/bundle.js",
@@ -43,16 +43,18 @@
     "test:coverage": "jest --detectOpenHandles --coverage"
   },
   "dependencies": {
-    "@ethereumjs/tx": "^5.1.0",
-    "@ethereumjs/util": "^9.0.1",
-    "@metamask/keyring-api": "^5.0.0",
-    "@metamask/snaps-sdk": "^3.1.1",
-    "@metamask/utils": "^8.1.0",
+    "@ethereumjs/tx": "^5.3.0",
+    "@ethereumjs/util": "^9.0.3",
+    "@metamask/keyring-api": "^13.0.0",
+    "@metamask/keyring-snap-sdk": "^1.1.0",
+    "@metamask/keyring-utils": "^1.0.0",
+    "@metamask/snaps-sdk": "^6.1.1",
+    "@metamask/superstruct": "^3.0.1",
+    "@metamask/utils": "^9.1.0",
     "@openzeppelin/contracts": "^4.2.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.3.1",
     "ethers": "^6.10.0",
-    "uuid": "^9.0.0",
-    "zod": "^3.23.8"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@lavamoat/allow-scripts": "^3.0.3",
@@ -61,7 +63,7 @@
     "@metamask/eslint-config-jest": "^12.1.0",
     "@metamask/eslint-config-nodejs": "^12.1.0",
     "@metamask/eslint-config-typescript": "^12.1.0",
-    "@metamask/snaps-cli": "^3.0.0",
+    "@metamask/snaps-cli": "^6.7.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
@@ -72,6 +74,7 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.10.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "chai": "^4.3.7",
@@ -91,7 +94,6 @@
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "solidity-coverage": "^0.8.1",
-    "superstruct": "^1.0.3",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.3.3"

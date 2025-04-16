@@ -1,7 +1,7 @@
 import {
   MethodNotSupportedError,
   handleKeyringRequest,
-} from '@metamask/keyring-api';
+} from '@metamask/keyring-snap-sdk';
 import type {
   OnKeyringRequestHandler,
   OnRpcRequestHandler,
@@ -17,8 +17,7 @@ let keyring: AccountAbstractionKeyring;
 async function getKeyring(): Promise<AccountAbstractionKeyring> {
   if (!keyring) {
     const state = await getState();
-    if (state) {
-      // eslint-disable-next-line require-atomic-updates
+    if (!keyring) {
       keyring = new AccountAbstractionKeyring(state);
     }
   }
@@ -97,5 +96,8 @@ export const onKeyringRequest: OnKeyringRequestHandler = async ({
   }
 
   // Handle keyring methods.
-  return handleKeyringRequest(await getKeyring(), request);
+  // return handleKeyringRequest(await getKeyring(), request);
+  // eslint-disable-next-line
+  // @ts-ignore TODO: fix typeings
+  return (await handleKeyringRequest(await getKeyring(), request)) ?? null;
 };

@@ -103,6 +103,7 @@ export const Method = ({
             id={props.id}
             placeholder={props.placeholder}
             onChange={props.onChange}
+            disabled={!props.onChange}
             value={props.value}
           />
         );

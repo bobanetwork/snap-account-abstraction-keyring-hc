@@ -5,13 +5,21 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 4rem;
   flex: 1;
-  margin-bottom: 7.6rem;
+  max-width: 120rem;
+  margin: 0 auto;
+  width: 100%;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    padding: 2rem;
+  }
 `;
 
 export const StyledBox = styled(Box)`
   width: 100%;
+  max-width: 120rem;
+  margin: 0 auto;
 `;
 
 export const StyledIcon = styled.span`
@@ -31,14 +39,10 @@ export const InformationBox = styled.div<{ error: boolean }>`
 `;
 
 export const Divider = styled.div`
-  color: #24272a;
-
-  /* Heading-MD */
-  font-family: Euclid Circular B, ui-sans-serif;
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 32px; /* 133.333% */
+  width: 100%;
+  height: 1px;
+  background: ${({ theme }) => theme.colors.border?.default};
+  margin: 2.4rem 0;
 `;
 
 export const DividerTitle = styled.p`
@@ -49,12 +53,30 @@ export const DividerTitle = styled.p`
 
 export const CardContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  padding-left: 14rem;
-  padding-right: 14rem;
-  flex: 1;
+  justify-content: center;
+  gap: 2.4rem;
+  width: 100%;
+  padding: 2.4rem 0;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    gap: 1.6rem;
+    padding: 1.6rem 0;
+  }
+`;
+
+export const Card = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 2.4rem;
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: ${({ theme }) => theme.colors.card?.default};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.default};
+  }
 `;
 
 export const ErrorMessage = styled.div`
@@ -63,22 +85,42 @@ export const ErrorMessage = styled.div`
   color: ${({ theme }) => theme.colors.error?.alternative};
   border-radius: ${({ theme }) => theme.radii.default};
   padding: 2.4rem;
-  margin-bottom: 2.4rem;
-  margin-top: 2.4rem;
-  max-width: 60rem;
+  margin: 2.4rem 0;
   width: 100%;
+
   ${({ theme }) => theme.mediaQueries.small} {
     padding: 1.6rem;
-    margin-bottom: 1.2rem;
-    margin-top: 1.2rem;
-    max-width: 100%;
+    margin: 1.6rem 0;
   }
 `;
 
 export const Heading = styled.h1`
-  margin-top: 0;
-  margin-bottom: 2.4rem;
+  color: ${({ theme }) => theme.colors.text?.default};
   text-align: center;
+  margin-bottom: 2.4rem;
+  font-size: ${({ theme }) => theme.fontSizes.heading};
+  font-weight: 700;
+  line-height: 1.2;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    font-size: ${({ theme }) => theme.fontSizes.mobileHeading};
+    margin-bottom: 1.6rem;
+  }
+`;
+
+export const SubHeading = styled.h2`
+  color: ${({ theme }) => theme.colors.text?.muted};
+  text-align: center;
+  margin-bottom: 4rem;
+  font-size: ${({ theme }) => theme.fontSizes.title};
+  font-weight: 500;
+  line-height: 1.5;
+  max-width: 64rem;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    font-size: ${({ theme }) => theme.fontSizes.large};
+    margin-bottom: 2.4rem;
+  }
 `;
 
 export const AccountTitleContainer = styled.div`
@@ -93,33 +135,24 @@ export const AccountTitleContainer = styled.div`
 `;
 
 export const AccountTitle = styled.p`
-  display: flex;
-  margin: 0px;
-  color: #000;
-  font-family: Euclid Circular B, ui-sans-serif;
-  font-size: 16px;
-  font-style: normal;
+  color: ${({ theme }) => theme.colors.text?.default};
+  font-size: ${({ theme }) => theme.fontSizes.text};
   font-weight: 500;
-  line-height: 24px; /* 150% */
+  line-height: 1.5;
+  margin: 0;
 `;
 
 export const AccountTitleIconContainer = styled.div`
   display: flex;
 `;
 
-export const AccountContainer = styled.div`
-  display: flex;
-  flex: 1;
-  padding: 16px;
-  margin-bottom: 20px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  border-radius: 8px;
-  border: 0px solid var(--border-default, #bbc0c5);
-  background: var(--background-default, #fff);
-  /* lg */
-  box-shadow: 0px 2px 40px 0px rgba(0, 0, 0, 0.1);
+export const AccountContainer = styled(Card)`
+  gap: 1.6rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary?.default};
+  }
 `;
 
 export const AccountRow = styled.div<{
@@ -205,5 +238,44 @@ export const AccountRowValue = styled.p`
 
   li {
     list-style-type: disc;
+  }
+`;
+
+export const FeatureGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.4rem;
+  width: 100%;
+  margin: 4rem 0;
+
+  ${({ theme }) => theme.mediaQueries.small} {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+    margin: 2.4rem 0;
+  }
+`;
+
+export const FeatureCard = styled(Card)`
+  align-items: center;
+  text-align: center;
+  gap: 1.6rem;
+  padding: 3.2rem 2.4rem;
+
+  svg {
+    width: 4.8rem;
+    height: 4.8rem;
+    color: ${({ theme }) => theme.colors.primary?.default};
+  }
+
+  h3 {
+    font-size: ${({ theme }) => theme.fontSizes.large};
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    color: ${({ theme }) => theme.colors.text?.muted};
+    font-size: ${({ theme }) => theme.fontSizes.text};
+    margin: 0;
   }
 `;
