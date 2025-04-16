@@ -18,7 +18,11 @@ const AccordionItem = styled.div`
   width: 100%;
   border: 0px solid var(--border-default, #bbc0c5);
   background: var(--background-default, #fff);
-  box-shadow: 0px 2px 40px 0px rgba(0, 0, 0, 0.1);
+  // box-shadow: 0px 2px 20px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const AccordionHeader = styled.div`

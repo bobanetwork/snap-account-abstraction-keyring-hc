@@ -8,9 +8,8 @@ const breakpoints = ['600px', '768px', '992px'] as const;
  */
 const theme = {
   fonts: {
-    default:
-      '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
-    code: 'ui-monospace,Menlo,Monaco,"Cascadia Mono","Segoe UI Mono","Roboto Mono","Oxygen Mono","Ubuntu Monospace","Source Code Pro","Fira Mono","Droid Sans Mono","Courier New", monospace',
+    default: 'Euclid Circular B, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    code: 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", monospace',
   },
   fontSizes: {
     heading: '5.2rem',
@@ -23,6 +22,7 @@ const theme = {
   radii: {
     default: '24px',
     button: '8px',
+    card: '16px',
   },
   breakpoints: [...breakpoints],
   mediaQueries: {
@@ -32,7 +32,8 @@ const theme = {
   },
   shadows: {
     default: '0px 7px 42px rgba(0, 0, 0, 0.1)',
-    button: '0px 0px 16.1786px rgba(0, 0, 0, 0.15);',
+    button: '0px 2px 40px rgba(0, 0, 0, 0.1)',
+    card: '0px 8px 32px rgba(0, 0, 0, 0.08)',
   },
 };
 
@@ -43,25 +44,26 @@ export const light: DefaultTheme = {
   colors: {
     background: {
       default: '#FFFFFF',
-      alternative: '#F2F4F6',
-      inverse: '#AEDB01',
+      alternative: '#F8F9FA',
+      inverse: '#aedb02',
+      gradient: 'linear-gradient(135deg, #0052FF 0%, #1E88E5 100%)',
     },
     icon: {
-      default: '#AEDB01',
+      default: '#aedb02',
       alternative: '#BBC0C5',
     },
     text: {
       default: '#24272A',
       muted: '#6A737D',
       alternative: '#535A61',
-      inverse: '#000',
+      inverse: '#000000',
     },
     border: {
-      default: '#BBC0C5',
+      default: '#E5E8EB',
     },
     primary: {
-      default: '#6F4CFF',
-      inverse: '#FFFFFF',
+      default: '#aedb02',
+      inverse: '#000000',
     },
     card: {
       default: '#FFFFFF',
@@ -71,6 +73,11 @@ export const light: DefaultTheme = {
       alternative: '#b92534',
       muted: '#d73a4919',
     },
+    success: {
+      default: '#28a745',
+      alternative: '#22863a',
+      muted: '#28a74519',
+    }
   },
   ...theme,
 };
@@ -81,48 +88,50 @@ export const light: DefaultTheme = {
 export const dark: DefaultTheme = {
   colors: {
     background: {
-      default: '#24272A',
+      default: '#1A1B1F',
       alternative: '#141618',
-      inverse: '#FFFFFF',
+      inverse: '#aedb02',
+      gradient: 'linear-gradient(135deg, #0052FF 0%, #1E88E5 100%)',
     },
     icon: {
-      default: '#FFFFFF',
+      default: '#aedb02',
       alternative: '#BBC0C5',
     },
     text: {
       default: '#FFFFFF',
-      muted: '#FFFFFF',
-      alternative: '#D6D9DC',
-      inverse: '#24272A',
+      muted: '#D6D9DC',
+      alternative: '#BBC0C5',
+      inverse: '#1A1B1F',
     },
     border: {
-      default: '#848C96',
+      default: '#2D2F34',
     },
     primary: {
-      default: '#6F4CFF',
-      inverse: '#FFFFFF',
+      default: '#aedb02',
+      inverse: '#000000',
     },
     card: {
-      default: '#141618',
+      default: '#24272A',
     },
     error: {
       default: '#d73a49',
       alternative: '#b92534',
       muted: '#d73a4919',
     },
+    success: {
+      default: '#28a745',
+      alternative: '#22863a',
+      muted: '#28a74519',
+    }
   },
   ...theme,
 };
 
 /**
  * Default style applied to the app.
- *
- * @param props - Styled Components props.
- * @returns Global style React component.
  */
-export const GlobalStyle = createGlobalStyle`
+const GlobalStyles = createGlobalStyle`
   html {
-    /* 62.5% of the base size of 16px = 10px.*/
     font-size: 62.5%;
   }
 
@@ -132,14 +141,25 @@ export const GlobalStyle = createGlobalStyle`
     font-family: ${(props) => props.theme.fonts.default};
     font-size: ${(props) => props.theme.fontSizes.text};
     margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   * {
-    transition: background-color .1s linear;
+    box-sizing: border-box;
   }
 
   h1, h2, h3, h4, h5, h6 {
+    font-family: ${(props) => props.theme.fonts.default};
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
     font-size: ${(props) => props.theme.fontSizes.heading};
+    line-height: 1.2;
     ${(props) => props.theme.mediaQueries.small} {
       font-size: ${(props) => props.theme.fontSizes.mobileHeading};
     }
@@ -151,37 +171,51 @@ export const GlobalStyle = createGlobalStyle`
     padding: 1.2rem;
     font-weight: normal;
     font-size: ${(props) => props.theme.fontSizes.text};
+    border-radius: ${(props) => props.theme.radii.button};
   }
 
   button {
+    font-family: ${(props) => props.theme.fonts.default};
     font-size: ${(props) => props.theme.fontSizes.small};
+    font-weight: 600;
     border-radius: ${(props) => props.theme.radii.button};
-    background-color: ${(props) => props.theme.colors.background?.inverse};
-    color: ${(props) => props.theme.colors.text?.inverse};
-    border: 1px solid ${(props) => props.theme.colors.background?.inverse};
-    font-weight: bold;
-    padding: 1rem;
+    background-color: ${(props) => props.theme.colors.primary?.default};
+    color: ${(props) => props.theme.colors.primary?.inverse};
+    border: 1px solid ${(props) => props.theme.colors.primary?.default};
+    padding: 1.2rem 2.4rem;
     min-height: 4.2rem;
     cursor: pointer;
-    transition: all .2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
 
     &:hover {
       background-color: transparent;
-      border: 1px solid ${(props) => props.theme.colors.background?.inverse};
-      color: ${(props) => props.theme.colors.text?.default};
+      border: 1px solid ${(props) => props.theme.colors.primary?.default};
+      color: ${(props) => props.theme.colors.primary?.default};
     }
 
     &:disabled,
     &[disabled] {
-      border: 1px solid ${(props) => props.theme.colors.background?.inverse};
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
     &:disabled:hover,
     &[disabled]:hover {
-      background-color: ${(props) => props.theme.colors.background?.inverse};
-      color: ${(props) => props.theme.colors.text?.inverse};
-      border: 1px solid ${(props) => props.theme.colors.background?.inverse};
+      background-color: ${(props) => props.theme.colors.primary?.default};
+      color: ${(props) => props.theme.colors.primary?.inverse};
+      border: 1px solid ${(props) => props.theme.colors.primary?.default};
+    }
+  }
+
+  a {
+    color: ${(props) => props.theme.colors.primary?.default};
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+
+    &:hover {
+      color: ${(props) => props.theme.colors.text?.default};
     }
   }
 `;
+
+export { GlobalStyles as GlobalStyle };
