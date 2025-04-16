@@ -3,11 +3,9 @@ import {
   handleKeyringRequest,
 } from '@metamask/keyring-snap-sdk';
 import type {
-  Json,
   OnKeyringRequestHandler,
   OnRpcRequestHandler,
 } from '@metamask/snaps-sdk';
-
 
 import { AccountAbstractionKeyring } from './keyring';
 import { logger } from './logger';

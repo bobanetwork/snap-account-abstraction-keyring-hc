@@ -2,7 +2,7 @@ import type { FunctionComponent, ReactNode } from 'react';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Footer, Header, AlertBanner, AlertType } from './components';
+import { Footer, Header } from './components';
 import { VersionBanner } from './components/VersionBanner';
 import { GlobalStyle } from './config/theme';
 
@@ -24,12 +24,6 @@ const ContentWrapper = styled.div`
   ${({ theme }) => theme.mediaQueries.small} {
     padding: 0 1rem;
   }
-`;
-
-const BannerWrapper = styled.div`
-  padding-top: 2.5rem;
-  padding-left: 5%;
-  padding-right: 5%;
 `;
 
 export type AppProps = {

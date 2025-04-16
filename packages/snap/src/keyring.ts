@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-useless-catch */
 import {
   addHexPrefix,
   Address,
   isValidPrivate,
   toChecksumAddress,
 } from '@ethereumjs/util';
-
 import type {
   EthBaseTransaction,
   EthBaseUserOperation,
@@ -19,7 +20,6 @@ import type {
 } from '@metamask/keyring-api';
 import { EthAccountType, EthMethod, KeyringEvent } from '@metamask/keyring-api';
 import { emitSnapKeyringEvent } from '@metamask/keyring-snap-sdk';
-
 import type { NodeType } from '@metamask/snaps-sdk';
 import {
   copyable,
@@ -34,6 +34,7 @@ import { Buffer } from 'buffer';
 import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
 import { v4 as uuid } from 'uuid';
+
 import { AA_CONFIG } from './constants/aa-config';
 import { CHAIN_IDS } from './constants/chain-ids';
 import {
@@ -814,9 +815,6 @@ export class AccountAbstractionKeyring implements Keyring {
       },
     });
 
-
-
-
     if (!result) {
       throw new Error(`User declined transaction!`);
     }
@@ -1118,18 +1116,6 @@ export class AccountAbstractionKeyring implements Keyring {
     return signature;
   }
 
-  /**
-   * Draft method
-   * --
-   * The transaction submitted to MM Flask via prepareUserOperation and patchUserOperation contains
-   * a paymasterAndData field which likely leads to a AA23 error. If userOP is sent by the snap,
-   * it succeeds internally, but the Metamask Flask UI labels it as Failed - as it most likely tries to
-   * send it itself, which does not succeed due to AA23 and the way things are build on the MM side.
-   * @param address
-   * @param userOp
-   * @param chainId
-   * @param signer
-   */
   // async #signAndSendUserOperationV07(
   //   address: string,
   //   userOp: EthUserOperation,

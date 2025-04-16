@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import { MetaMaskContext } from '../hooks';
+
 import snapPackageInfo from '../../../snap/package.json';
 import packageInfo from '../../package.json';
 import { defaultSnapOrigin } from '../config';
+import { MetaMaskContext } from '../hooks';
 
 const BannerWrapper = styled.div`
   display: flex;
@@ -15,7 +16,6 @@ const BannerWrapper = styled.div`
   max-width: 120rem;
   width: 80%;
   flex-wrap: wrap;
-
 
   ${({ theme }) => theme.mediaQueries.small} {
     padding: 1rem;
@@ -51,16 +51,17 @@ const VersionTag = styled.div<{ variant?: 'success' | 'error' | 'default' }>`
         return theme.colors.text?.default;
     }
   }};
-  border: 1px solid ${({ theme, variant }) => {
-    switch (variant) {
-      case 'success':
-        return theme.colors.success?.default;
-      case 'error':
-        return theme.colors.error?.default;
-      default:
-        return theme.colors.border?.default;
-    }
-  }};
+  border: 1px solid
+    ${({ theme, variant }) => {
+      switch (variant) {
+        case 'success':
+          return theme.colors.success?.default;
+        case 'error':
+          return theme.colors.error?.default;
+        default:
+          return theme.colors.border?.default;
+      }
+    }};
 
   ${({ theme }) => theme.mediaQueries.small} {
     padding: 0.6rem 1rem;
@@ -77,18 +78,12 @@ export const VersionBanner: React.FC = () => {
 
   return (
     <BannerWrapper>
-      {isLocal && (
-        <VersionTag>
-          Local Snap
-        </VersionTag>
-      )}
-      <VersionTag>
-        DApp: v{packageInfo.version}
-      </VersionTag>
-      <VersionTag>
-        Expected: v{expectedVersion}
-      </VersionTag>
-      <VersionTag variant={installedVersion ? (hasUpdate ? 'error' : 'success') : 'error'}>
+      {isLocal && <VersionTag>Local Snap</VersionTag>}
+      <VersionTag>DApp: v{packageInfo.version}</VersionTag>
+      <VersionTag>Expected: v{expectedVersion}</VersionTag>
+      <VersionTag
+        variant={installedVersion ? (hasUpdate ? 'error' : 'success') : 'error'}
+      >
         {installedVersion ? `Installed: v${installedVersion}` : 'Not Installed'}
       </VersionTag>
     </BannerWrapper>

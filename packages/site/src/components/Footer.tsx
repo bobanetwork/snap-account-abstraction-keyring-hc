@@ -1,6 +1,6 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaTwitter, FaDiscord, FaGithub, FaTelegram } from 'react-icons/fa';
+import styled from 'styled-components';
 
 import Logo from '../assets/boba-logo-full.svg';
 
@@ -99,20 +99,34 @@ export const Footer = () => {
         <LeftSection>
           <BobaLogo src={Logo} alt="Boba Network Logo" />
         </LeftSection>
-        <CenterSection>
-          Powered by HybridCompute™
-        </CenterSection>
+        <CenterSection>Powered by HybridCompute™</CenterSection>
         <RightSection>
-          <SocialLink href="https://x.com/bobanetwork" target="_blank" rel="noopener noreferrer">
+          <SocialLink
+            href="https://x.com/bobanetwork"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaTwitter />
           </SocialLink>
-          <SocialLink href="https://discord.com/invite/Hvu3zpFwWd" target="_blank" rel="noopener noreferrer">
+          <SocialLink
+            href="https://discord.com/invite/Hvu3zpFwWd"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaDiscord />
           </SocialLink>
-          <SocialLink href="https://github.com/bobanetwork" target="_blank" rel="noopener noreferrer">
+          <SocialLink
+            href="https://github.com/bobanetwork"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaGithub />
           </SocialLink>
-          <SocialLink href="https://t.me/bobanetwork" target="_blank" rel="noopener noreferrer">
+          <SocialLink
+            href="https://t.me/bobanetwork"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaTelegram />
           </SocialLink>
         </RightSection>

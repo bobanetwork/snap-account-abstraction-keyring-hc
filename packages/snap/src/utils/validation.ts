@@ -1,7 +1,7 @@
 import { exactOptional } from '@metamask/keyring-utils';
+import { assert, define, object, StructError } from '@metamask/superstruct';
 import type { Hex } from '@metamask/utils';
 import { isValidHexAddress } from '@metamask/utils';
-import { assert, define, object, StructError } from '@metamask/superstruct';
 
 import { throwError } from './util';
 import { CONFIG_ERROR_MESSAGES, CONFIG_KEYS } from '../constants/chainConfig';
@@ -16,7 +16,6 @@ export const UrlStruct = define<string>('Url', (value: unknown) => {
     return false;
   }
 });
-
 
 const EthereumAddress = define(
   'EthereumAddress',

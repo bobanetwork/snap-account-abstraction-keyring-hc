@@ -1,5 +1,5 @@
+/* eslint-disable no-useless-catch */
 import { bytesToHex, hexToBytes } from '@metamask/utils';
-
 // Changed from 80 to 32 bytes (256 bits) for AES-GCM
 const ENCRYPTION_KEY_LENGTH = 32;
 

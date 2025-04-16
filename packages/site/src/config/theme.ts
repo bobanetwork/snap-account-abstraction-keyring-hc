@@ -8,7 +8,8 @@ const breakpoints = ['600px', '768px', '992px'] as const;
  */
 const theme = {
   fonts: {
-    default: 'Euclid Circular B, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    default:
+      'Euclid Circular B, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
     code: 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", monospace',
   },
   fontSizes: {
@@ -77,7 +78,7 @@ export const light: DefaultTheme = {
       default: '#28a745',
       alternative: '#22863a',
       muted: '#28a74519',
-    }
+    },
   },
   ...theme,
 };
@@ -122,14 +123,11 @@ export const dark: DefaultTheme = {
       default: '#28a745',
       alternative: '#22863a',
       muted: '#28a74519',
-    }
+    },
   },
   ...theme,
 };
 
-/**
- * Default style applied to the app.
- */
 const GlobalStyles = createGlobalStyle`
   html {
     font-size: 62.5%;

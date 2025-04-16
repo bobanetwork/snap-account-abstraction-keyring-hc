@@ -78,12 +78,13 @@ const TOKEN_ADDR: any = {
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
-  console.log(`snapState`, snapState)
+  console.log(`snapState`, snapState);
   // Is not a good practice to store sensitive data in the state of
   // a component but for this case it should be ok since this is an
   // internal development and testing tool.
   const [privateKey, setPrivateKey] = useState<string | null>();
   const [salt, setSalt] = useState<string | null>();
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [bobaPaymasterSelected, setBobaPaymasterSelected] = useState<
     boolean | null
   >();
@@ -536,8 +537,7 @@ const Index = () => {
         disabled: isLoading,
       },
       successMessage: 'Smart Contract Account Created',
-    }
-    ,
+    },
     {
       name: 'Transfer Funds',
       description: 'Transfer funds from your Smart Account',
@@ -663,7 +663,7 @@ const Index = () => {
                 handleDelete={async (accountIdToDelete) => {
                   await client.deleteAccount(accountIdToDelete);
                   const accounts = await client.listAccounts();
-                  console.log(` 🚶‍♂️ accounts`, accounts)
+                  console.log(` 🚶‍♂️ accounts`, accounts);
                   setSnapState({
                     ...snapState,
                     accounts,

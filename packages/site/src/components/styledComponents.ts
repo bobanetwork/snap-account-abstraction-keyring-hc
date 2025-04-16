@@ -59,7 +59,6 @@ export const CardContainer = styled.div`
   padding: 2.4rem 0;
 
   ${({ theme }) => theme.mediaQueries.small} {
-
     gap: 1.6rem;
     padding: 1.6rem 0;
   }

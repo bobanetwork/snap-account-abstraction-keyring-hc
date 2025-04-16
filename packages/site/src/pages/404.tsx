@@ -1,6 +1,7 @@
-import React from 'react'
-import { Card } from '../components'
-import { CardContainer, Container } from '../components/styledComponents'
+import React from 'react';
+
+import { Card } from '../components';
+import { CardContainer, Container } from '../components/styledComponents';
 
 const Page404 = () => {
   return (
@@ -9,15 +10,13 @@ const Page404 = () => {
         <Card
           content={{
             description: 'Something went wrong please reload app',
-            button: (
-              <a href="/">Reload Page</a>
-            ),
+            button: <a href="/">Reload Page</a>,
           }}
-        // disabled={!state.hasMetaMask}
+          // disabled={!state.hasMetaMask}
         />
       </CardContainer>
     </Container>
-  )
-}
+  );
+};
 
-export default Page404
+export default Page404;

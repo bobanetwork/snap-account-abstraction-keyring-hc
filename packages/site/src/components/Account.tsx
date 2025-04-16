@@ -1,9 +1,10 @@
+/* eslint-disable no-nested-ternary prettier/prettier no-useless-return */
 import { type KeyringAccount } from '@metamask/keyring-api';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
+import styled from 'styled-components';
 
 const AccountCard = styled.div`
   background: white;
@@ -22,7 +23,6 @@ const AccountHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: ${({ isExpanded }: { isExpanded: boolean }) => (isExpanded ? '16px' : '0')};
 `;
 
 const AccountInfo = styled.div`
@@ -108,7 +108,6 @@ export const Account = ({
   handleDelete: (accountId: string) => Promise<void>;
   count: number;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopy = async () => {
@@ -117,11 +116,12 @@ export const Account = ({
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const isCurrentAccount = currentAccount?.address?.toLowerCase() === account.address.toLowerCase();
+  const isCurrentAccount =
+    currentAccount?.address?.toLowerCase() === account.address.toLowerCase();
 
   return (
     <AccountCard>
-      <AccountHeader isExpanded={isExpanded}>
+      <AccountHeader>
         <AccountInfo>
           <Jazzicon diameter={40} seed={jsNumberForAddress(account.address)} />
           <AccountDetails>
@@ -131,7 +131,10 @@ export const Account = ({
             </AccountName>
             <AddressContainer>
               {truncateAddress(account.address)}
-              <CopyButton onClick={handleCopy} title={copySuccess ? 'Copied!' : 'Copy address'}>
+              <CopyButton
+                onClick={handleCopy}
+                title={copySuccess ? 'Copied!' : 'Copy address'}
+              >
                 <ContentCopyIcon fontSize="small" />
               </CopyButton>
             </AddressContainer>
@@ -141,8 +144,8 @@ export const Account = ({
           </AccountDetails>
         </AccountInfo>
         <DeleteButton
-          onClick={async () => {
-            await handleDelete(account.id);
+          onClick={() => {
+            handleDelete(account.id);
           }}
           title="Delete account"
         >

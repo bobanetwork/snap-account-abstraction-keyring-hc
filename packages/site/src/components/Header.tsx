@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useContext } from 'react';
 import semver from 'semver';
 import styled from 'styled-components';
@@ -84,7 +85,9 @@ const ConnectionStatus = styled.div<{ isConnected: boolean }>`
     height: 0.8rem;
     border-radius: 50%;
     background: ${({ isConnected, theme }) =>
-    isConnected ? theme.colors.success?.default : theme.colors.error?.default};
+  isConnected
+    ? theme.colors.success?.default
+    : theme.colors.error?.default};
   }
 
   ${({ theme }) => theme.mediaQueries.small} {
@@ -145,8 +148,8 @@ export const Header = () => {
       <Title>AA HC Wallet</Title>
       <RightContainer>
         <NetworkButton>Boba Sepolia</NetworkButton>
-        <ConnectionStatus isConnected={state.installedSnap != null}>
-          {state.installedSnap != null ? 'Connected' : 'Not Connected'}
+        <ConnectionStatus isConnected={Boolean(state.installedSnap)}>
+          {state.installedSnap !== null ? 'Connected' : 'Not Connected'}
         </ConnectionStatus>
         <HeaderButtons
           state={state}
@@ -157,5 +160,3 @@ export const Header = () => {
     </HeaderWrapper>
   );
 };
-
-
