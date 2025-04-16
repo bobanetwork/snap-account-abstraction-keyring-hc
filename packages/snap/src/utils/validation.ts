@@ -1,7 +1,7 @@
 import { exactOptional, UrlStruct } from '@metamask/keyring-api';
 import type { Hex } from '@metamask/utils';
 import { isValidHexAddress } from '@metamask/utils';
-import { assert, define, object, StructError } from 'superstruct';
+import { assert, define, object, StructError } from '@metamask/superstruct';
 
 import { throwError } from './util';
 import { CONFIG_ERROR_MESSAGES, CONFIG_KEYS } from '../constants/chainConfig';

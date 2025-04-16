@@ -4,10 +4,10 @@
   "proposedName": "Boba Network Account Abstraction Keyring",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring.git"
+    "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring-hc.git"
   },
   "source": {
-    "shasum": "tGF4m1uHjh48/OZrQgxShsjdv5c7YoawcMsy2G1ktKM=",
+    "shasum": "V8Z2pAKiB8yDQvueXsBWbj7FtRRK/DJNjQE+/08F+QQ=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -43,5 +43,6 @@
     "endowment:ethereum-provider": {},
     "endowment:network-access": {}
   },
+  "platformVersion": "6.22.0",
   "manifestVersion": "0.1"
 }

@@ -6,21 +6,20 @@ import {
   isValidPrivate,
   toChecksumAddress,
 } from '@ethereumjs/util';
+
 import type {
   EthBaseTransaction,
   EthBaseUserOperation,
   EthUserOperation,
+  EthUserOperationPatch,
   Keyring,
   KeyringAccount,
   KeyringRequest,
   SubmitRequestResponse,
 } from '@metamask/keyring-api';
-import {
-  emitSnapKeyringEvent,
-  EthAccountType,
-  EthMethod,
-  KeyringEvent,
-} from '@metamask/keyring-api';
+import { EthAccountType, EthMethod, KeyringEvent } from '@metamask/keyring-api';
+import { emitSnapKeyringEvent } from '@metamask/keyring-snap-sdk';
+
 import type { NodeType } from '@metamask/snaps-sdk';
 import {
   copyable,
@@ -29,15 +28,12 @@ import {
   panel,
   text,
 } from '@metamask/snaps-sdk';
-import type { CaipChainId, Json } from '@metamask/utils';
+import type { CaipChainId, Json, JsonRpcRequest } from '@metamask/utils';
 import { hexToBytes, parseCaipChainId } from '@metamask/utils';
 import { Buffer } from 'buffer';
 import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
 import { v4 as uuid } from 'uuid';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { z } from 'zod';
-
 import { AA_CONFIG } from './constants/aa-config';
 import { CHAIN_IDS } from './constants/chain-ids';
 import {
@@ -313,10 +309,12 @@ export class AccountAbstractionKeyring implements Keyring {
     const encryptedPrivateKey = await encrypt(await secureKey.getPrivateKey());
 
     try {
+      const scope = toCaipChainId(CaipNamespaces.Eip155, chainId.toString());
       const account: KeyringAccount = {
         id: uuid(),
         options,
         address: aaAddress,
+        scopes: [scope],
         methods: [
           // 4337 methods
           EthMethod.PrepareUserOperation,
@@ -328,10 +326,10 @@ export class AccountAbstractionKeyring implements Keyring {
       };
       this.#state.wallets[account.id] = {
         account,
-        admin,
+        admin, // Address of the admin account from private key
         encryptedPrivateKey,
         chains: {
-          [toCaipChainId(CaipNamespaces.Eip155, chainId.toString())]: false,
+          [scope]: false,
         },
         salt,
         initCode,
@@ -419,8 +417,7 @@ export class AccountAbstractionKeyring implements Keyring {
 
   async #syncSubmitRequest(request: any): Promise<SubmitRequestResponse> {
     try {
-      const { method, params } = request.request;
-      const scope = request.scope ? request.scope : params[0].scope;
+      const { method, params = [] } = request.request as JsonRpcRequest;
       let selectedWallet;
 
       // @DEV todo create one uniform way of retrieving the wallet addr
@@ -434,7 +431,7 @@ export class AccountAbstractionKeyring implements Keyring {
         account: selectedWallet.account,
         method,
         params: params as Json,
-        scope,
+        scope: request.scope,
       });
 
       return {
@@ -816,6 +813,9 @@ export class AccountAbstractionKeyring implements Keyring {
         ]),
       },
     });
+
+
+
 
     if (!result) {
       throw new Error(`User declined transaction!`);

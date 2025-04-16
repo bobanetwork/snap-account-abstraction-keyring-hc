@@ -11,13 +11,13 @@
     "account abstraction",
     "4337"
   ],
-  "homepage": "https://github.com/bobanetwork/snap-account-abstraction-keyring#readme",
+  "homepage": "https://github.com/bobanetwork/snap-account-abstraction-keyring-hc#readme",
   "bugs": {
-    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring/issues"
+    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring-hc/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring.git"
+    "url": "https://github.com/bobanetwork/snap-account-abstraction-keyring-hc.git"
   },
   "license": "(MIT-0 OR Apache-2.0)",
   "author": "",
@@ -44,8 +44,7 @@
     "install-chrome": "./scripts/install-chrome.sh"
   },
   "dependencies": {
-    "postinstall": "^0.9.0",
-    "zod": "^3.23.8"
+    "postinstall": "^0.9.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.3",
