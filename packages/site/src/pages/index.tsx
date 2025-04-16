@@ -78,6 +78,7 @@ const TOKEN_ADDR: any = {
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
+  console.log(`snapState`, snapState)
   // Is not a good practice to store sensitive data in the state of
   // a component but for this case it should be ok since this is an
   // internal development and testing tool.
@@ -162,7 +163,9 @@ const Index = () => {
   }, [state.installedSnap]);
 
   const syncAccounts = async () => {
+    console.log(`🚶‍♂️ fetching account list`);
     const accounts = await client.listAccounts();
+    console.log(`🔒 account list goes`, accounts);
     setSnapState({
       ...snapState,
       accounts,
@@ -658,7 +661,7 @@ const Index = () => {
                 handleDelete={async (accountIdToDelete) => {
                   await client.deleteAccount(accountIdToDelete);
                   const accounts = await client.listAccounts();
-                  console.log(`accounts`, accounts)
+                  console.log(` 🚶‍♂️ accounts`, accounts)
                   setSnapState({
                     ...snapState,
                     accounts,

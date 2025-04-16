@@ -23,8 +23,8 @@ const NETWORKS: Record<string, NetworkConfig> = {
   mainnet: {
     chainId: '288',
     hexChainId: '0x120',
-    chainName: 'Boba Mainnet',
-    rpcUrl: 'wss://gateway.tenderly.co/public/boba-ethereum',
+    chainName: 'Boba Network',
+    rpcUrl: 'https://mainnet.boba.network',
     blockExplorerUrl: 'https://bobascan.com',
   },
   sepolia: {
@@ -67,7 +67,10 @@ export const switchToNetwork = async (
         ],
       });
     } catch (error: any) {
+      // If the chain is not added yet
       if (error.code === 4902) {
+        try {
+        // Try adding the network
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [
@@ -84,6 +87,18 @@ export const switchToNetwork = async (
             },
           ],
         });
+
+          // Try switching again after adding
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: network.hexChainId }],
+          });
+
+        } catch (addError: any) {
+          console.error("Failed to add Ethereum chain:", addError.message || addError);
+        }
+      } else {
+        console.error("Failed to switch Ethereum chain:", switchError.message || switchError);
       }
     }
   }
