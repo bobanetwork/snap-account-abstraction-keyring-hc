@@ -123,6 +123,14 @@ export const ConnectButton = (props: ComponentProps<typeof Button>) => {
   );
 };
 
+export const ReloadButton = (props: ComponentProps<typeof Button>) => {
+  return (
+    <Button id="Reload Button" {...props}>
+      <ButtonText>Reload App</ButtonText>
+    </Button>
+  );
+};
+
 export const ReconnectButton = (props: ComponentProps<typeof Button>) => {
   return (
     <Button {...props}>

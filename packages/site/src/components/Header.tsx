@@ -46,7 +46,7 @@ const RightContainer = styled.div`
   align-items: center;
 `;
 
-const VersionStyle = styled.p`
+const VersionStyle = styled.div`
   width: fit-content;
   margin-top: 1.2rem;
   font-size: 1.6rem;

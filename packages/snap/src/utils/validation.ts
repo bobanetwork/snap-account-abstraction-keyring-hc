@@ -1,4 +1,4 @@
-import { exactOptional, UrlStruct } from '@metamask/keyring-api';
+import { exactOptional } from '@metamask/keyring-utils';
 import type { Hex } from '@metamask/utils';
 import { isValidHexAddress } from '@metamask/utils';
 import { assert, define, object, StructError } from '@metamask/superstruct';
@@ -6,6 +6,17 @@ import { assert, define, object, StructError } from '@metamask/superstruct';
 import { throwError } from './util';
 import { CONFIG_ERROR_MESSAGES, CONFIG_KEYS } from '../constants/chainConfig';
 import type { ChainConfig } from '../keyring';
+
+// TODO: TEMP remove when @metamask/keyring-api reexports it.
+export const UrlStruct = define<string>('Url', (value: unknown) => {
+  try {
+    const url = new URL(value as string);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
+});
+
 
 const EthereumAddress = define(
   'EthereumAddress',

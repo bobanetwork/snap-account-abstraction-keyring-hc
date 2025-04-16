@@ -1,5 +1,5 @@
 import type { KeyringAccount, KeyringRequest } from '@metamask/keyring-api';
-import { KeyringSnapRpcClient } from '@metamask/keyring-api';
+import { KeyringSnapRpcClient } from '@metamask/keyring-snap-client';
 import Grid from '@mui/material/Grid';
 import { ethers, parseUnits } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
@@ -658,6 +658,7 @@ const Index = () => {
                 handleDelete={async (accountIdToDelete) => {
                   await client.deleteAccount(accountIdToDelete);
                   const accounts = await client.listAccounts();
+                  console.log(`accounts`, accounts)
                   setSnapState({
                     ...snapState,
                     accounts,
