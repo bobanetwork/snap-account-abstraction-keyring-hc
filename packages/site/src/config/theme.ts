@@ -130,7 +130,7 @@ export const dark: DefaultTheme = {
 /**
  * Default style applied to the app.
  */
-export const GlobalStyle = createGlobalStyle`
+const GlobalStyles = createGlobalStyle`
   html {
     font-size: 62.5%;
   }
@@ -148,7 +148,6 @@ export const GlobalStyle = createGlobalStyle`
 
   * {
     box-sizing: border-box;
-    transition: all 0.2s ease-in-out;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -186,7 +185,7 @@ export const GlobalStyle = createGlobalStyle`
     padding: 1.2rem 2.4rem;
     min-height: 4.2rem;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
 
     &:hover {
       background-color: transparent;
@@ -218,3 +217,5 @@ export const GlobalStyle = createGlobalStyle`
     }
   }
 `;
+
+export { GlobalStyles as GlobalStyle };

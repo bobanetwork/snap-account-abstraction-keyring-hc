@@ -36,6 +36,8 @@ export type AppProps = {
   children: ReactNode;
 };
 
+const StyledGlobalStyle = GlobalStyle as any;
+
 export const App: FunctionComponent<AppProps> = ({ children }) => {
   // Make sure we are on a browser, otherwise we can't use window.ethereum.
   if (typeof window === 'undefined') {
@@ -44,7 +46,7 @@ export const App: FunctionComponent<AppProps> = ({ children }) => {
 
   return (
     <>
-      <GlobalStyle />
+      <StyledGlobalStyle />
       <Wrapper>
         <ContentWrapper>
           <Header />
