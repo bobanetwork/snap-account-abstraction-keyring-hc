@@ -490,6 +490,24 @@ const Index = () => {
 
   const accountManagementMethods = [
     {
+      name: 'Create account (Deterministic)',
+      description:
+        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
+      inputs: [
+        {
+          id: 'create-account-deterministic',
+          title: 'Counter',
+          value: counter.toString(),
+          type: InputType.TextField,
+        },
+      ],
+      action: {
+        callback: async () => await createAccountDeterministic(),
+        label: 'Create Account',
+      },
+      successMessage: 'Smart Contract Account Created',
+    },
+    {
       name: 'Create account',
       description:
         'Create a 4337 account using an admin private key and a salt, which you need to write down or store to re-create the wallet.',
@@ -518,25 +536,8 @@ const Index = () => {
         disabled: isLoading,
       },
       successMessage: 'Smart Contract Account Created',
-    },
-    {
-      name: 'Create account (Deterministic)',
-      description:
-        'Create a 4337 account using a deterministic key generated through the snap. If the account cannot be found or already exists, try to remove and re-install the snap via the Metamask UI.',
-      inputs: [
-        {
-          id: 'create-account-deterministic',
-          title: 'Counter',
-          value: counter.toString(),
-          type: InputType.TextField,
-        },
-      ],
-      action: {
-        callback: async () => await createAccountDeterministic(),
-        label: 'Create Account',
-      },
-      successMessage: 'Smart Contract Account Created',
-    },
+    }
+    ,
     {
       name: 'Transfer Funds',
       description: 'Transfer funds from your Smart Account',
@@ -650,11 +651,12 @@ const Index = () => {
           >
             <Grid item xs={8} sm={4} md={2}>
               <DividerTitle>Methods</DividerTitle>
+              <Divider />
               <Accordion items={accountManagementMethods} />
             </Grid>
             <Grid item xs={4} sm={2} md={1}>
-              <Divider />
               <DividerTitle>Accounts</DividerTitle>
+              <Divider />
               <AccountList
                 currentAccount={selectedAccount as any}
                 accounts={snapState.accounts}

@@ -46,6 +46,7 @@
     "react-helmet": "^6.1.0",
     "react-icons": "^4.8.0",
     "react-is": "^18.2.0",
+    "react-jazzicon": "^1.0.4",
     "semver": "^7.5.4",
     "styled-components": "5.3.9",
     "uuid": "^9.0.0",
