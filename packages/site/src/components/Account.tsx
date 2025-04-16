@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary prettier/prettier no-useless-return */
+/* eslint-disable*/
 import { type KeyringAccount } from '@metamask/keyring-api';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
