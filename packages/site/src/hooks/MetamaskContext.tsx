@@ -6,13 +6,16 @@ import { hasMetaMask, getSnap, isConnectedNetworkBoba } from '../utils';
 
 export type MetamaskState = {
   hasMetaMask: boolean;
+  isMetaMaskConnected: boolean;
   installedSnap?: Snap;
-  isBobaSepolia?: Snap;
+  isBobaSepolia: boolean;
   error?: Error;
 };
 
 const initialState: MetamaskState = {
   hasMetaMask: false,
+  isMetaMaskConnected: false,
+  isBobaSepolia: false,
 };
 
 type MetamaskDispatch = { type: MetamaskActions; payload: any };
@@ -30,6 +33,7 @@ export enum MetamaskActions {
   SetInstalled = 'SetInstalled',
   SetNetwork = 'SetNetwork',
   SetMetaMaskDetected = 'SetMetaMaskDetected',
+  SetMetaMaskConnected = 'SetMetaMaskConnected',
   SetError = 'SetError',
 }
 
@@ -45,19 +49,21 @@ const reducer: Reducer<MetamaskState, MetamaskDispatch> = (state, action) => {
         ...state,
         installedSnap: action.payload,
       };
-
     case MetamaskActions.SetMetaMaskDetected:
       return {
         ...state,
         hasMetaMask: action.payload,
       };
-
+    case MetamaskActions.SetMetaMaskConnected:
+      return {
+        ...state,
+        isMetaMaskConnected: action.payload,
+      };
     case MetamaskActions.SetError:
       return {
         ...state,
         error: action.payload,
       };
-
     default:
       return state;
   }
@@ -79,53 +85,103 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const detectInstallation = async () => {
-      /**
-       * Detect if MetaMask is installed.
-       */
-      async function detectMetaMask() {
-        const isMetaMaskDetected = await hasMetaMask();
+      // Detect if MetaMask is installed
+      const isMetaMaskDetected = await hasMetaMask();
+      dispatch({
+        type: MetamaskActions.SetMetaMaskDetected,
+        payload: isMetaMaskDetected,
+      });
 
-        dispatch({
-          type: MetamaskActions.SetMetaMaskDetected,
-          payload: isMetaMaskDetected,
-        });
-      }
+      if (isMetaMaskDetected && window.ethereum) {
+        // Check if already connected
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          const isConnected = Array.isArray(accounts) && accounts.length > 0;
+          dispatch({
+            type: MetamaskActions.SetMetaMaskConnected,
+            payload: isConnected,
+          });
 
-      /**
-       * Detect if the snap is installed.
-       */
-      async function detectSnapInstalled() {
-        const installedSnap = await getSnap();
-        dispatch({
-          type: MetamaskActions.SetInstalled,
-          payload: installedSnap,
-        });
-      }
+          if (isConnected) {
+            // Check network
+            const isBobaSepolia = isConnectedNetworkBoba();
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: isBobaSepolia,
+            });
 
-      /**
-       * Detect if the snap is installed.
-       */
-      async function detectNetworkInstalled() {
-        const isBobaSepolia = isConnectedNetworkBoba();
-        dispatch({
-          type: MetamaskActions.SetNetwork,
-          payload: isBobaSepolia,
-        });
-      }
-
-      await detectMetaMask();
-
-      if (state.hasMetaMask) {
-        await detectNetworkInstalled();
-
-        if (state.isBobaSepolia) {
-          await detectSnapInstalled();
+            // Check snap installation
+            if (isBobaSepolia) {
+              const installedSnap = await getSnap();
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: installedSnap,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error checking MetaMask connection:', error);
+          dispatch({
+            type: MetamaskActions.SetError,
+            payload: error,
+          });
         }
+
+        // Setup event listeners
+        window.ethereum.on('accountsChanged', (accounts: unknown) => {
+          const isConnected = Array.isArray(accounts) && accounts.length > 0;
+          dispatch({
+            type: MetamaskActions.SetMetaMaskConnected,
+            payload: isConnected,
+          });
+
+          if (!isConnected) {
+            // Reset snap and network state when disconnected
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: undefined,
+            });
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: false,
+            });
+          }
+        });
+
+        window.ethereum.on('chainChanged', async () => {
+          const isBobaSepolia = isConnectedNetworkBoba();
+          dispatch({
+            type: MetamaskActions.SetNetwork,
+            payload: isBobaSepolia,
+          });
+
+          // Re-check snap installation on network change
+          if (isBobaSepolia) {
+            const installedSnap = await getSnap();
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: installedSnap,
+            });
+          } else {
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: undefined,
+            });
+          }
+        });
       }
     };
 
     detectInstallation().catch(console.error);
-  }, [state.hasMetaMask, window.ethereum]);
+
+    // Cleanup
+    return () => {
+      if (window.ethereum?.removeListener) {
+        window.ethereum.removeListener('accountsChanged', () => { });
+        window.ethereum.removeListener('chainChanged', () => { });
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let timeoutId: number;

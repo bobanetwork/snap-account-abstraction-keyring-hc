@@ -163,9 +163,12 @@ export const HeaderButtons = ({
   onConnectClick(): unknown;
 }) => {
   const getNetworkName = () => {
-    return window.ethereum.networkVersion === '28882'
-      ? 'Boba Sepolia'
-      : 'Boba Mainnet';
+    if (window.ethereum.networkVersion === '28882') {
+      return "Boba Sepolia"
+    } else if (window.ethereum.networkVersion === '288') {
+      return "Boba Mainnet"
+    }
+    return "Other Network"
   };
 
   if (!state.hasMetaMask && !state.installedSnap) {

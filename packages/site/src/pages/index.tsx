@@ -3,13 +3,14 @@ import { KeyringSnapRpcClient } from '@metamask/keyring-snap-client';
 import Grid from '@mui/material/Grid';
 import { ethers, parseUnits } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
+import styled from 'styled-components';
 
 import {
   Accordion,
   AccountList,
   Card,
-  ConnectButton,
-  InstallHcSnapButton,
+  WelcomeScreen,
+  NetworkManager,
 } from '../components';
 import {
   CardContainer,
@@ -22,7 +23,15 @@ import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import { InputType } from '../types';
 import type { KeyringState } from '../utils';
-import { connectSnap, getSnap, loadAccountConnected } from '../utils';
+import { connectSnap, getSnap, loadAccountConnected, isConnectedNetworkBoba } from '../utils';
+
+const StyledButton = styled.button`
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+`;
 
 const snapId = defaultSnapOrigin;
 
@@ -99,6 +108,28 @@ const Index = () => {
 
   const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
+  const [currentChainId, setCurrentChainId] = useState<string>('');
+
+  const handleNetworkChange = async (network: string) => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: network }],
+      });
+      setCurrentChainId(network);
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+    }
+  };
+
+  useEffect(() => {
+    const getCurrentNetwork = async () => {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      setCurrentChainId(chainId as string);
+    };
+    getCurrentNetwork();
+  }, []);
+
   useEffect(() => {
     /**
      * Return the current state of the snap.
@@ -472,19 +503,47 @@ const Index = () => {
 
   const handleConnectClick = async () => {
     try {
-      await connectSnap();
-      const installedSnap = await getSnap();
+      if (!state.isMetaMaskConnected) {
+        // First connect MetaMask
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        dispatch({
+          type: MetamaskActions.SetMetaMaskConnected,
+          payload: true,
+        });
+      }
 
+      // Check if we're on a Boba network
+      const isBobaSepolia = isConnectedNetworkBoba();
       dispatch({
         type: MetamaskActions.SetNetwork,
-        payload: true,
+        payload: isBobaSepolia,
       });
 
+      if (isBobaSepolia) {
+      // Then connect snap
+        await connectSnap();
+        const installedSnap = await getSnap();
+        dispatch({
+          type: MetamaskActions.SetInstalled,
+          payload: installedSnap,
+        });
+      }
+    } catch (error) {
+      console.error('Error connecting:', error);
+      dispatch({ type: MetamaskActions.SetError, payload: error });
+    }
+  };
+
+  const handleSnapInstall = async () => {
+    try {
+      await connectSnap();
+      const installedSnap = await getSnap();
       dispatch({
         type: MetamaskActions.SetInstalled,
         payload: installedSnap,
       });
     } catch (error) {
+      console.error('Error installing snap:', error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
     }
   };
@@ -601,79 +660,100 @@ const Index = () => {
     },
   ];
 
+  const renderContent = () => {
+    // If MetaMask is not installed or not connected
+    if (!state.hasMetaMask || !state.isMetaMaskConnected) {
+      return (
+        <WelcomeScreen
+          onConnectClick={handleConnectClick}
+          hasMetaMask={state.hasMetaMask}
+        />
+      );
+    }
+
+    // If connected but snap not installed
+    if (!state.installedSnap) {
+      return (
+        <Card
+          content={{
+            title: 'Install Snap',
+            description: 'To continue, please install the Account Abstraction Snap.',
+            button: (
+              <button
+                onClick={handleSnapInstall}
+                style={{
+                  display: 'flex',
+                  alignSelf: 'flex-start',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: 'auto',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#1098fc',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Install Snap
+              </button>
+            ),
+          }}
+        />
+      );
+    }
+
+    // If not on Boba network, show network switcher
+    if (!state.isBobaSepolia) {
+      return (
+        <NetworkManager
+          currentNetwork={currentChainId}
+          onNetworkChange={handleNetworkChange}
+        />
+      );
+    }
+
+    // Main app content when everything is set up
+    return (
+      <StyledBox sx={{ flexGrow: 1 }}>
+        <Grid
+          alignItems="flex-start"
+          container
+          spacing={4}
+          columns={[1, 2, 3]}
+        >
+          <Grid item xs={8} sm={4} md={2}>
+            <DividerTitle>Methods</DividerTitle>
+            <Divider />
+            <Accordion items={accountManagementMethods} />
+          </Grid>
+          <Grid item xs={4} sm={2} md={1}>
+            <DividerTitle>Accounts</DividerTitle>
+            <Divider />
+            <AccountList
+              currentAccount={selectedAccount as any}
+              accounts={snapState.accounts}
+              handleDelete={async (accountIdToDelete) => {
+                await client.deleteAccount(accountIdToDelete);
+                const accounts = await client.listAccounts();
+                console.log(` 🚶‍♂️ accounts`, accounts);
+                setSnapState({
+                  ...snapState,
+                  accounts,
+                });
+              }}
+            />
+          </Grid>
+        </Grid>
+      </StyledBox>
+    );
+  };
+
   return (
     <Container>
-      {/* eslint-disable-next-line no-negated-condition,no-nested-ternary */}
-      {!state.isBobaSepolia ? (
-        <CardContainer>
-          <Card
-            content={{
-              description: 'Please connect to Boba to use HC AA wallet app',
-              button: (
-                <ConnectButton
-                  onClick={handleConnectClick}
-                  disabled={!state.hasMetaMask}
-                />
-              ),
-            }}
-            disabled={!state.hasMetaMask}
-          />
-        </CardContainer>
-      ) : // eslint-disable-next-line no-negated-condition
-      !state.installedSnap ? (
-        <CardContainer>
-          <Card
-            content={{
-              title: 'Connect',
-              description:
-                'Get started by connecting to and installing the snap.',
-              button: (
-                <InstallHcSnapButton
-                  onClick={handleConnectClick}
-                  disabled={!state.hasMetaMask}
-                />
-              ),
-            }}
-            disabled={!state.hasMetaMask}
-          />
-        </CardContainer>
-      ) : (
-        <></>
-      )}
-
-      {state.installedSnap && state.isBobaSepolia && (
-        <StyledBox sx={{ flexGrow: 1 }}>
-          <Grid
-            alignItems="flex-start"
-            container
-            spacing={4}
-            columns={[1, 2, 3]}
-          >
-            <Grid item xs={8} sm={4} md={2}>
-              <DividerTitle>Methods</DividerTitle>
-              <Divider />
-              <Accordion items={accountManagementMethods} />
-            </Grid>
-            <Grid item xs={4} sm={2} md={1}>
-              <DividerTitle>Accounts</DividerTitle>
-              <Divider />
-              <AccountList
-                currentAccount={selectedAccount as any}
-                accounts={snapState.accounts}
-                handleDelete={async (accountIdToDelete) => {
-                  await client.deleteAccount(accountIdToDelete);
-                  const accounts = await client.listAccounts();
-                  console.log(` 🚶‍♂️ accounts`, accounts);
-                  setSnapState({
-                    ...snapState,
-                    accounts,
-                  });
-                }}
-              />
-            </Grid>
-          </Grid>
-        </StyledBox>
-      )}
+      <CardContainer>
+        {renderContent()}
+      </CardContainer>
     </Container>
   );
 };
