@@ -1,11 +1,9 @@
 /* eslint-disable*/
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-
 import snapPackageInfo from '../../../snap/package.json';
-import packageInfo from '../../package.json';
-import { defaultSnapOrigin } from '../config';
 import { MetaMaskContext } from '../hooks';
+import { defaultSnapOrigin } from '../config';
 
 const BannerWrapper = styled.div`
   display: flex;
@@ -80,12 +78,11 @@ export const VersionBanner: React.FC = () => {
   return (
     <BannerWrapper>
       {isLocal && <VersionTag>Local Snap</VersionTag>}
-      <VersionTag>DApp: v{packageInfo.version}</VersionTag>
-      <VersionTag>Expected: v{expectedVersion}</VersionTag>
+      <VersionTag>Expected Snap: v{expectedVersion}</VersionTag>
       <VersionTag
         variant={installedVersion ? (hasUpdate ? 'error' : 'success') : 'error'}
       >
-        {installedVersion ? `Installed: v${installedVersion}` : 'Not Installed'}
+        {installedVersion ? `Installed Snap: v${installedVersion}` : 'Not Installed'}
       </VersionTag>
     </BannerWrapper>
   );
