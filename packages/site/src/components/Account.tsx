@@ -53,9 +53,10 @@ const AddressContainer = styled.div`
 `;
 
 const CopyButton = styled.button`
+  min-height: unset;
   background: none;
   border: none;
-  padding: 4px;
+  padding: 8px;
   cursor: pointer;
   color: ${({ theme }) => theme.colors.text?.muted};
   opacity: 0.6;
