@@ -214,23 +214,17 @@ export const Header = () => {
         <Title>AA HC Wallet</Title>
       </LogoWrapper>
       <RightContainer>
-        <NetworkStatus>
+        {isFullyConnected && <NetworkStatus>
           {getNetworkName()}
-        </NetworkStatus>
+        </NetworkStatus>}
         <ConnectionStatus isConnected={isFullyConnected}>
           {getConnectionStatus()}
         </ConnectionStatus>
-        {/* {state.isMetaMaskConnected && !state.isBobaSepolia && (
-          <AlertBanner
-            title="Please switch to a supported Boba network"
-            alertType={AlertType.Failure}
-          />
-        )} */}
-        <HeaderButtons
+        {/* <HeaderButtons
           state={state}
           onConnectClick={handleConnectClick}
           updateAvailable={updateAvailable}
-        />
+        /> */}
       </RightContainer>
     </HeaderWrapper>
   );

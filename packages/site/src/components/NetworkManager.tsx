@@ -7,26 +7,16 @@ const NetworkContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-  max-width: 600px;
+  max-width: 60%;
   margin: 0 auto;
 `;
 
 const NetworkButton = styled.button<{ isActive?: boolean }>`
   padding: 12px 24px;
   border-radius: 8px;
-  border: 2px solid #1098fc;
-  background: ${({ isActive }) => (isActive ? '#1098fc' : 'transparent')};
-  color: ${({ isActive }) => (isActive ? 'white' : '#1098fc')};
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   font-size: 16px;
   font-weight: 500;
-  transition: all 0.2s ease-in-out;
-  width: 100%;
-
-  &:hover {
-    transform: scale(1.02);
-    background: ${({ isActive }) => (isActive ? '#1098fc' : '#1098fc22')};
-  }
 `;
 
 const NetworkGrid = styled.div`
@@ -53,6 +43,7 @@ export const NetworkManager: React.FC<NetworkManagerProps> = ({
   return (
     <NetworkContainer>
       <Card
+        fullWidth={true}
         content={{
           title: 'Select Network',
           description: 'Please select a supported network to continue.',
@@ -64,7 +55,7 @@ export const NetworkManager: React.FC<NetworkManagerProps> = ({
                   isActive={currentNetwork === chainId}
                   onClick={() => onNetworkChange(chainId)}
                 >
-                  {name}
+                  Connect to {name}
                 </NetworkButton>
               ))}
             </NetworkGrid>

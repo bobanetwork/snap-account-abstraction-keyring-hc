@@ -23,7 +23,13 @@ import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import { InputType } from '../types';
 import type { KeyringState } from '../utils';
-import { connectSnap, getSnap, loadAccountConnected, isConnectedNetworkBoba } from '../utils';
+import {
+  connectSnap,
+  getSnap,
+  loadAccountConnected,
+  isConnectedNetworkBoba,
+  switchToNetwork,
+} from '../utils/snap';
 
 const StyledButton = styled.button`
   display: flex;
@@ -31,6 +37,37 @@ const StyledButton = styled.button`
   align-items: center;
   justify-content: center;
   margin-top: auto;
+`;
+
+const ConnectButton = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  font-size: 16px;
+  font-weight: 500;
+`;
+
+const Header = styled.header`
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  width: 100%;
+`;
+
+const NetworkSwitchButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #1098fc;
+  background: transparent;
+  color: #1098fc;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background: #1098fc22;
+  }
 `;
 
 const snapId = defaultSnapOrigin;
@@ -84,6 +121,11 @@ const TOKEN_ADDR: any = {
   },
 };
 
+export interface NetworkManagerProps {
+  currentNetwork: string;
+  onNetworkChange: (networkType: 'mainnet' | 'sepolia') => Promise<void>;
+}
+
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
@@ -110,13 +152,26 @@ const Index = () => {
   const abiCoder = new ethers.AbiCoder();
   const [currentChainId, setCurrentChainId] = useState<string>('');
 
-  const handleNetworkChange = async (network: string) => {
+  const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
     try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: network }],
+      await switchToNetwork(networkType);
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      setCurrentChainId(chainId as string);
+
+      // Check if we're on a Boba network after switching
+      const isBobaSepolia = isConnectedNetworkBoba();
+      dispatch({
+        type: MetamaskActions.SetNetwork,
+        payload: isBobaSepolia,
       });
-      setCurrentChainId(network);
+
+      if (isBobaSepolia) {
+        const installedSnap = await getSnap();
+        dispatch({
+          type: MetamaskActions.SetInstalled,
+          payload: installedSnap,
+        });
+      }
     } catch (error) {
       console.error('Failed to switch network:', error);
     }
@@ -131,68 +186,182 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    /**
-     * Return the current state of the snap.
-     *
-     * @returns The current state of the snap.
-     */
-    async function getState() {
-      if (!state.installedSnap) {
+    const listenToAccountChange = async () => {
+      // Handle account changes
+      window.ethereum.on('accountsChanged', (...args: unknown[]) => {
+        const accounts = args[0];
+        const accountList = accounts as string[];
+        if (!Array.isArray(accountList) || accountList.length === 0) {
+          // User disconnected their wallet
+          dispatch({
+            type: MetamaskActions.SetMetaMaskConnected,
+            payload: false,
+          });
+          dispatch({
+            type: MetamaskActions.SetInstalled,
+            payload: null,
+          });
+          setSnapState(initialState);
+          setSelectedAccount(undefined);
+          return;
+        }
+
+        // Update accounts
+        (async () => {
+          try {
+            const snapAccounts = await client.listAccounts();
+            const currentAccount = await loadAccountConnected();
+            const account = snapAccounts.find(
+              (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
+            );
+            setSelectedAccount(account);
+            setSnapState({
+              ...snapState,
+              accounts: snapAccounts,
+            });
+          } catch (error) {
+            console.error('Error updating accounts:', error);
+            setSnapState(initialState);
+            setSelectedAccount(undefined);
+          }
+        })();
+      });
+
+      // Handle network changes
+      window.ethereum.on('chainChanged', (...args: unknown[]) => {
+        const chainId = args[0];
+        (async () => {
+          try {
+            const isBobaSepolia = isConnectedNetworkBoba();
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: isBobaSepolia,
+            });
+
+            if (!isBobaSepolia) {
+              // Reset snap state when not on Boba network
+              setSnapState(initialState);
+              setSelectedAccount(undefined);
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: null,
+              });
+              return;
+            }
+
+            // Re-check snap connection on valid network
+            const installedSnap = await getSnap();
+            if (!installedSnap) {
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: null,
+              });
+              setSnapState(initialState);
+              setSelectedAccount(undefined);
+              return;
+            }
+
+            // Update snap state if connected
+            const accounts = await client.listAccounts();
+            const currentAccount = await loadAccountConnected();
+            const account = accounts.find(
+              (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
+            );
+            setSelectedAccount(account);
+            setSnapState({
+              ...snapState,
+              accounts,
+            });
+          } catch (error) {
+            console.error('Error handling network change:', error);
+            setSnapState(initialState);
+            setSelectedAccount(undefined);
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: null,
+            });
+          }
+        })();
+      });
+
+      // Initial connection check
+      try {
+        const accounts = await window.ethereum.request<string[]>({
+          method: 'eth_accounts'
+        });
+
+        dispatch({
+          type: MetamaskActions.SetMetaMaskConnected,
+          payload: Array.isArray(accounts) && accounts.length > 0,
+        });
+
+        if (Array.isArray(accounts) && accounts.length > 0) {
+          const isBobaSepolia = isConnectedNetworkBoba();
+          dispatch({
+            type: MetamaskActions.SetNetwork,
+            payload: isBobaSepolia,
+          });
+
+          if (isBobaSepolia) {
+            const installedSnap = await getSnap();
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: installedSnap,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error checking initial connection:', error);
+      }
+    };
+
+    listenToAccountChange().catch((error) => {
+      console.error('Error in account change listener:', error);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.ethereum.removeListener('accountsChanged', () => { });
+      window.ethereum.removeListener('chainChanged', () => { });
+    };
+  }, []);
+
+  // Separate useEffect for snap state management
+  useEffect(() => {
+    const updateSnapState = async () => {
+      if (!state.installedSnap || !state.isMetaMaskConnected || !state.isBobaSepolia) {
+        setSnapState(initialState);
+        setSelectedAccount(undefined);
         return;
       }
-      const accounts = await client.listAccounts();
-      const currentAccount = await loadAccountConnected();
-      const account = accounts.find(
-        (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
-      );
 
-      setSelectedAccount(account);
-
-      const saltIndexCount = accounts.filter(
-        (acc) => acc.options?.saltIndex,
-      ).length;
-      setCounter(saltIndexCount);
-
-      // listRequests
-      setSnapState({
-        ...state,
-        accounts,
-        usePaymaster: false,
-      });
-    }
-
-    getState().catch((error) => console.error(error));
-
-    const listenToAccountChange = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      window.ethereum.on('accountsChanged', async () => {
-        // reset connection
+      try {
         const accounts = await client.listAccounts();
         const currentAccount = await loadAccountConnected();
         const account = accounts.find(
           (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
         );
         setSelectedAccount(account);
+
+        const saltIndexCount = accounts.filter(
+          (acc) => acc.options?.saltIndex,
+        ).length;
+        setCounter(saltIndexCount);
+
         setSnapState({
           ...snapState,
           accounts,
+          usePaymaster: false,
         });
-      });
-
-      // change in network.
-      window.ethereum.on('networkChanged', function (networkId) {
-        // Time to reload your interface with the new networkId
-        if (networkId !== 28882) {
-          dispatch({
-            type: MetamaskActions.SetNetwork,
-            payload: false,
-          });
-        }
-      });
+      } catch (error) {
+        console.error('Error updating snap state:', error);
+        setSnapState(initialState);
+        setSelectedAccount(undefined);
+      }
     };
 
-    listenToAccountChange().catch((error) => console.error(error));
-  }, [state.installedSnap]);
+    updateSnapState();
+  }, [state.installedSnap, state.isMetaMaskConnected, state.isBobaSepolia]);
 
   const syncAccounts = async () => {
     console.log(`🚶‍♂️ fetching account list`);
@@ -660,13 +829,16 @@ const Index = () => {
     },
   ];
 
+  console.log(`state`, state)
   const renderContent = () => {
     // If MetaMask is not installed or not connected
-    if (!state.hasMetaMask || !state.isMetaMaskConnected) {
+    if (!state.isMetaMaskConnected) {
       return (
         <WelcomeScreen
           onConnectClick={handleConnectClick}
           hasMetaMask={state.hasMetaMask}
+          currentNetwork={currentChainId}
+          onNetworkChange={handleNetworkChange}
         />
       );
     }
@@ -679,73 +851,52 @@ const Index = () => {
             title: 'Install Snap',
             description: 'To continue, please install the Account Abstraction Snap.',
             button: (
-              <button
+              <ConnectButton
                 onClick={handleSnapInstall}
-                style={{
-                  display: 'flex',
-                  alignSelf: 'flex-start',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginTop: 'auto',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: '#1098fc',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
               >
                 Install Snap
-              </button>
+              </ConnectButton>
             ),
           }}
         />
       );
     }
 
-    // If not on Boba network, show network switcher
-    if (!state.isBobaSepolia) {
-      return (
-        <NetworkManager
-          currentNetwork={currentChainId}
-          onNetworkChange={handleNetworkChange}
-        />
-      );
-    }
-
     // Main app content when everything is set up
     return (
-      <StyledBox sx={{ flexGrow: 1 }}>
-        <Grid
-          alignItems="flex-start"
-          container
-          spacing={4}
-          columns={[1, 2, 3]}
-        >
-          <Grid item xs={8} sm={4} md={2}>
-            <DividerTitle>Methods</DividerTitle>
-            <Divider />
-            <Accordion items={accountManagementMethods} />
+      <>
+        <StyledBox sx={{ flexGrow: 1 }}>
+          <Grid
+            alignItems="flex-start"
+            container
+            spacing={4}
+            columns={[1, 2, 3]}
+          >
+            <Grid item xs={8} sm={4} md={2}>
+              <DividerTitle>Methods</DividerTitle>
+              <Divider />
+              <Accordion items={accountManagementMethods} />
+            </Grid>
+            <Grid item xs={4} sm={2} md={1}>
+              <DividerTitle>Accounts</DividerTitle>
+              <Divider />
+              <AccountList
+                currentAccount={selectedAccount as any}
+                accounts={snapState.accounts}
+                handleDelete={async (accountIdToDelete) => {
+                  await client.deleteAccount(accountIdToDelete);
+                  const accounts = await client.listAccounts();
+                  console.log(` 🚶‍♂️ accounts`, accounts);
+                  setSnapState({
+                    ...snapState,
+                    accounts,
+                  });
+                }}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={4} sm={2} md={1}>
-            <DividerTitle>Accounts</DividerTitle>
-            <Divider />
-            <AccountList
-              currentAccount={selectedAccount as any}
-              accounts={snapState.accounts}
-              handleDelete={async (accountIdToDelete) => {
-                await client.deleteAccount(accountIdToDelete);
-                const accounts = await client.listAccounts();
-                console.log(` 🚶‍♂️ accounts`, accounts);
-                setSnapState({
-                  ...snapState,
-                  accounts,
-                });
-              }}
-            />
-          </Grid>
-        </Grid>
-      </StyledBox>
+        </StyledBox>
+      </>
     );
   };
 

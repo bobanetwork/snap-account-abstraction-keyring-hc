@@ -11,4 +11,3 @@ export * from './Accordion';
 export * from './AlertBanner';
 export * from './NetworkManager';
 export * from './WelcomeScreen';
-export * from './WalletContainer';
