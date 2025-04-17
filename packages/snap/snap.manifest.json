@@ -43,6 +43,6 @@
     "endowment:ethereum-provider": {},
     "endowment:network-access": {}
   },
-  "platformVersion": "6.22.0",
+  "platformVersion": "6.16.0",
   "manifestVersion": "0.1"
 }
