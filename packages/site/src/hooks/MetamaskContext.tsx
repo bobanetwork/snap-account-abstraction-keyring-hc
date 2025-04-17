@@ -99,7 +99,9 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
       if (isMetaMaskDetected && window.ethereum) {
         try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          const accounts = await window.ethereum.request({
+            method: 'eth_accounts',
+          });
           const isConnected = Array.isArray(accounts) && accounts.length > 0;
           dispatch({
             type: MetamaskActions.SetMetaMaskConnected,
@@ -107,7 +109,9 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
           });
 
           if (isConnected) {
-            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const chainId = await window.ethereum.request({
+              method: 'eth_chainId',
+            });
             dispatch({
               type: MetamaskActions.SetNetwork,
               payload: { chainId },
@@ -179,8 +183,8 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener('accountsChanged', () => { });
-        window.ethereum.removeListener('chainChanged', () => { });
+        window.ethereum.removeListener('accountsChanged', () => {});
+        window.ethereum.removeListener('chainChanged', () => {});
       }
     };
   }, []);

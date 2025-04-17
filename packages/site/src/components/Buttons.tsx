@@ -164,11 +164,11 @@ export const HeaderButtons = ({
 }) => {
   const getNetworkName = () => {
     if (window.ethereum.networkVersion === '28882') {
-      return "Boba Sepolia"
+      return 'Boba Sepolia';
     } else if (window.ethereum.networkVersion === '288') {
-      return "Boba Mainnet"
+      return 'Boba Mainnet';
     }
-    return "Other Network"
+    return 'Other Network';
   };
 
   if (!state.hasMetaMask && !state.installedSnap) {

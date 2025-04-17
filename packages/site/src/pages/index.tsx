@@ -9,8 +9,8 @@ import {
   Accordion,
   AccountList,
   Card,
-  WelcomeScreen,
   NetworkManager,
+  WelcomeScreen,
 } from '../components';
 import {
   CardContainer,
@@ -26,18 +26,10 @@ import type { KeyringState } from '../utils';
 import {
   connectSnap,
   getSnap,
-  loadAccountConnected,
   isConnectedNetworkBoba,
+  loadAccountConnected,
   switchToNetwork,
 } from '../utils/snap';
-
-const StyledButton = styled.button`
-  display: flex;
-  align-self: flex-start;
-  align-items: center;
-  justify-content: center;
-  margin-top: auto;
-`;
 
 const ConnectButton = styled.button`
   padding: 12px 24px;
@@ -53,8 +45,6 @@ const Header = styled.header`
   padding: 1rem;
   width: 100%;
 `;
-
-
 
 const snapId = defaultSnapOrigin;
 
@@ -107,10 +97,10 @@ const TOKEN_ADDR: any = {
   },
 };
 
-export interface NetworkManagerProps {
+export type NetworkManagerProps = {
   currentNetwork: string;
   onNetworkChange: (networkType: 'mainnet' | 'sepolia') => Promise<void>;
-}
+};
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
@@ -198,7 +188,8 @@ const Index = () => {
             const snapAccounts = await client.listAccounts();
             const currentAccount = await loadAccountConnected();
             const account = snapAccounts.find(
-              (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
+              (acc) =>
+                acc.address.toLowerCase() === currentAccount.toLowerCase(),
             );
             setSelectedAccount(account);
             setSnapState({
@@ -251,7 +242,8 @@ const Index = () => {
             const accounts = await client.listAccounts();
             const currentAccount = await loadAccountConnected();
             const account = accounts.find(
-              (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
+              (acc) =>
+                acc.address.toLowerCase() === currentAccount.toLowerCase(),
             );
             setSelectedAccount(account);
             setSnapState({
@@ -273,7 +265,7 @@ const Index = () => {
       // Initial connection check
       try {
         const accounts = await window.ethereum.request<string[]>({
-          method: 'eth_accounts'
+          method: 'eth_accounts',
         });
 
         dispatch({
@@ -307,15 +299,19 @@ const Index = () => {
 
     // Cleanup listeners on unmount
     return () => {
-      window.ethereum.removeListener('accountsChanged', () => { });
-      window.ethereum.removeListener('chainChanged', () => { });
+      window.ethereum.removeListener('accountsChanged', () => {});
+      window.ethereum.removeListener('chainChanged', () => {});
     };
   }, []);
 
   // Separate useEffect for snap state management
   useEffect(() => {
     const updateSnapState = async () => {
-      if (!state.installedSnap || !state.isMetaMaskConnected || !state.isBobaSepolia) {
+      if (
+        !state.installedSnap ||
+        !state.isMetaMaskConnected ||
+        !state.isBobaSepolia
+      ) {
         setSnapState(initialState);
         setSelectedAccount(undefined);
         return;
@@ -675,7 +671,7 @@ const Index = () => {
       });
 
       if (isBobaSepolia) {
-      // Then connect snap
+        // Then connect snap
         await connectSnap();
         const installedSnap = await getSnap();
         dispatch({
@@ -815,7 +811,7 @@ const Index = () => {
     },
   ];
 
-  console.log(`state`, state)
+  console.log(`state`, state);
   const renderContent = () => {
     // If MetaMask is not installed or not connected
     if (!state.hasMetaMask || !state.isMetaMaskConnected) {
@@ -834,7 +830,9 @@ const Index = () => {
       return (
         <NetworkManager
           currentNetwork={currentChainId}
-          onNetworkChange={(network) => handleNetworkChange(network === '0x120' ? 'mainnet' : 'sepolia')}
+          onNetworkChange={async (network) =>
+            handleNetworkChange(network === '0x120' ? 'mainnet' : 'sepolia')
+          }
         />
       );
     }
@@ -845,11 +843,10 @@ const Index = () => {
         <Card
           content={{
             title: 'Install Snap',
-            description: 'To continue, please install the Account Abstraction Snap.',
+            description:
+              'To continue, please install the Account Abstraction Snap.',
             button: (
-              <ConnectButton
-                onClick={handleSnapInstall}
-              >
+              <ConnectButton onClick={handleSnapInstall}>
                 Install Snap
               </ConnectButton>
             ),
@@ -897,9 +894,7 @@ const Index = () => {
 
   return (
     <Container>
-      <CardContainer>
-        {renderContent()}
-      </CardContainer>
+      <CardContainer>{renderContent()}</CardContainer>
     </Container>
   );
 };

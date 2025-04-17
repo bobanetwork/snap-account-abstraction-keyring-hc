@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { Card } from './Card';
 import { switchToNetwork } from '../utils/snap';
 
@@ -39,12 +40,12 @@ const ConnectButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
   }
 `;
 
-export interface WelcomeScreenProps {
+export type WelcomeScreenProps = {
   onConnectClick: () => Promise<void>;
   hasMetaMask: boolean;
   currentNetwork?: string;
   onNetworkChange?: (network: 'mainnet' | 'sepolia') => Promise<void>;
-}
+};
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onConnectClick,
@@ -74,20 +75,21 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             : 'To continue, please install MetaMask.',
           button: (
             <ButtonContainer>
-              <ConnectButton
-                onClick={onConnectClick}
-                disabled={!hasMetaMask}
-              >
+              <ConnectButton onClick={onConnectClick} disabled={!hasMetaMask}>
                 {hasMetaMask ? 'Connect MetaMask' : 'Install MetaMask'}
               </ConnectButton>
-              {!hasMetaMask ? currentNetwork && (
-                <ConnectButton
-                  variant="secondary"
-                  onClick={() => handleNetworkSwitch(isMainnet ? 'sepolia' : 'mainnet')}
-                >
-                  Switch to {isMainnet ? 'Sepolia' : 'Mainnet'}
-                </ConnectButton>
-              ) : null}
+              {!hasMetaMask
+                ? currentNetwork && (
+                    <ConnectButton
+                      variant="secondary"
+                      onClick={async () =>
+                        handleNetworkSwitch(isMainnet ? 'sepolia' : 'mainnet')
+                      }
+                    >
+                      Switch to {isMainnet ? 'Sepolia' : 'Mainnet'}
+                    </ConnectButton>
+                  )
+                : null}
             </ButtonContainer>
           ),
         }}

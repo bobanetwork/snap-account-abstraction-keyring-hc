@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { Card } from './Card';
 
 const NetworkContainer = styled.div`
@@ -26,10 +27,10 @@ const NetworkGrid = styled.div`
   width: 100%;
 `;
 
-export interface NetworkManagerProps {
+export type NetworkManagerProps = {
   currentNetwork: string;
   onNetworkChange: (network: string) => void;
-}
+};
 
 const SUPPORTED_NETWORKS = {
   'Boba Mainnet': '0xa',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaTwitter, FaDiscord, FaGithub, FaTelegram } from 'react-icons/fa';
 import styled from 'styled-components';
+
 import packageInfo from '../../package.json';
 import Logo from '../assets/boba-logo-full.svg';
 
@@ -93,7 +94,6 @@ const BottomBar = styled.div`
 `;
 
 export const Footer = () => {
-
   return (
     <>
       <FooterWrapper>
@@ -133,7 +133,8 @@ export const Footer = () => {
         </RightSection>
       </FooterWrapper>
       <BottomBar>
-        © {new Date().getFullYear()} Boba Network. All rights reserved. | v{packageInfo.version}
+        © {new Date().getFullYear()} Boba Network. All rights reserved. | v
+        {packageInfo.version}
         {/* <a href="#">Terms</a>•<a href="#">Privacy</a> */}
       </BottomBar>
     </>
