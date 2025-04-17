@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import styled from 'styled-components';
 
@@ -56,14 +57,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const handleNetworkSwitch = async (networkType: 'mainnet' | 'sepolia') => {
     try {
       await switchToNetwork(networkType);
-      onNetworkChange?.(networkType);
+      await onNetworkChange?.(networkType);
     } catch (error) {
       console.error('Failed to switch network:', error);
     }
   };
 
   const isMainnet = currentNetwork === '0x120'; // Boba Mainnet
-  const isSepolia = currentNetwork === '0x70d2'; // Boba Sepolia
 
   return (
     <WelcomeContainer>

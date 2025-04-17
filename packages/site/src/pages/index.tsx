@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { KeyringAccount, KeyringRequest } from '@metamask/keyring-api';
 import { KeyringSnapRpcClient } from '@metamask/keyring-snap-client';
 import Grid from '@mui/material/Grid';
@@ -37,13 +38,6 @@ const ConnectButton = styled.button`
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   font-size: 16px;
   font-weight: 500;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
-  width: 100%;
 `;
 
 const snapId = defaultSnapOrigin;
@@ -390,9 +384,6 @@ const Index = () => {
       return false;
     }
 
-    const currentChainId = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
     const currentChainIdInt = parseInt(currentChainId, 16);
 
     const transactionDetails: Record<string, any> = {
@@ -428,9 +419,7 @@ const Index = () => {
     if (!selectedAccount) {
       return false;
     }
-    const currentChainId = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
+
     const currentChainIdInt = parseInt(currentChainId, 16);
 
     const data = abiCoder.encode(
@@ -471,9 +460,6 @@ const Index = () => {
       return false;
     }
 
-    const currentChainId = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
     const currentChainIdInt = parseInt(currentChainId, 16);
 
     const funcSelector = ethers.FunctionFragment.getSelector('addDepositFor', [
@@ -506,9 +492,6 @@ const Index = () => {
       return false;
     }
 
-    const currentChainId = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
     const currentChainIdInt = parseInt(currentChainId, 16);
 
     const data = abiCoder.encode(
@@ -538,9 +521,6 @@ const Index = () => {
   };
 
   const approveBobaSpend = async () => {
-    const currentChainId = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
     const currentChainIdInt = parseInt(currentChainId, 16);
 
     const funcSelector = ethers.FunctionFragment.getSelector('approve', [

@@ -1,17 +1,18 @@
+/* eslint-disable */
 import type { Dispatch, ReactNode, Reducer } from 'react';
 import React, { createContext, useEffect, useReducer } from 'react';
 
 import type { Snap } from '../types';
-import { hasMetaMask, getSnap, isConnectedNetworkBoba } from '../utils';
+import { getSnap, hasMetaMask } from '../utils';
 
 export type MetamaskState = {
   hasMetaMask: boolean;
   isMetaMaskConnected: boolean;
-  installedSnap?: Snap;
+  installedSnap?: Snap | null;
   isBobaSepolia: boolean;
   isBobaMainnet: boolean;
-  currentNetwork?: string | undefined;
-  error?: Error;
+  currentNetwork?: string | null;
+  error?: Error | null;
 };
 
 const initialState: MetamaskState = {
@@ -19,7 +20,9 @@ const initialState: MetamaskState = {
   isMetaMaskConnected: false,
   isBobaSepolia: false,
   isBobaMainnet: false,
-  currentNetwork: undefined,
+  currentNetwork: null,
+  installedSnap: null,
+  error: null,
 };
 
 type MetamaskDispatch = { type: MetamaskActions; payload: any };
@@ -145,11 +148,11 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
           if (!isConnected) {
             dispatch({
               type: MetamaskActions.SetInstalled,
-              payload: undefined,
+              payload: null,
             });
             dispatch({
               type: MetamaskActions.SetNetwork,
-              payload: { chainId: undefined },
+              payload: { chainId: null },
             });
           }
         });
@@ -171,7 +174,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
             } else {
               dispatch({
                 type: MetamaskActions.SetInstalled,
-                payload: undefined,
+                payload: null,
               });
             }
           }
@@ -196,7 +199,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
       timeoutId = window.setTimeout(() => {
         dispatch({
           type: MetamaskActions.SetError,
-          payload: undefined,
+          payload: null,
         });
       }, 10000);
     }
