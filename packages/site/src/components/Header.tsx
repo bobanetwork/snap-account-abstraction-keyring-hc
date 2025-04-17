@@ -1,14 +1,24 @@
 /* eslint-disable */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import semver from 'semver';
 import styled from 'styled-components';
 
 import snapPackageInfo from '../../../snap/package.json';
 import Logo from '../assets/boba-logo-full.svg';
-import { MetamaskActions, MetaMaskContext } from '../hooks';
-import { connectSnap, getSnap, isConnectedNetworkBoba } from '../utils';
-import { HeaderButtons } from './Buttons';
-import { AlertBanner, AlertType } from './AlertBanner';
+import { MetaMaskContext, MetamaskState } from '../hooks';
+import { switchToNetwork } from '../utils';
+
+const NetworkSwitchButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 8px;
+
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+
+`;
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -106,104 +116,53 @@ const NetworkStatus = styled.div`
   font-weight: 500;
 `;
 
+const getNetworkName = (chainId?: string) => {
+  switch (chainId) {
+    case '0x70d2': // 28882
+      return 'Boba Sepolia';
+    case '0x120': // 288
+      return 'Boba Mainnet';
+    default:
+      return 'Unsupported Network';
+  }
+};
+
+const getConnectionStatus = (state: MetamaskState) => {
+  if (!state.hasMetaMask) {
+    return 'MetaMask Not Found';
+  }
+  if (!state.isMetaMaskConnected) {
+    return 'Not Connected';
+  }
+  if (!state.isBobaSepolia && !state.isBobaMainnet) {
+    return 'Wrong Network';
+  }
+  if (!state.installedSnap) {
+    return 'Snap Not Installed';
+  }
+  return `Connected to ${getNetworkName(state.currentNetwork)}`;
+};
+
 export const Header = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
-  const [currentNetwork, setCurrentNetwork] = useState<string>('');
+
+  const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
+    try {
+      await switchToNetwork(networkType);
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+    }
+  };
 
   const updateAvailable = Boolean(
     state?.installedSnap &&
-      semver.gt(snapPackageInfo.version, state.installedSnap?.version),
+    semver.gt(snapPackageInfo.version, state.installedSnap?.version),
   );
-
-  useEffect(() => {
-    const checkNetwork = async () => {
-      if (window.ethereum) {
-        try {
-          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-          if (typeof chainId === 'string') {
-            setCurrentNetwork(chainId);
-          }
-        } catch (error) {
-          console.error('Error checking network:', error);
-        }
-      }
-    };
-
-    checkNetwork();
-
-    // Listen for network changes
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', (chainId: unknown) => {
-        if (typeof chainId === 'string') {
-          setCurrentNetwork(chainId);
-        }
-      });
-    }
-
-    return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener('chainChanged', () => { });
-      }
-    };
-  }, []);
-
-  const handleConnectClick = async () => {
-    try {
-      if (!state.isMetaMaskConnected) {
-        // First connect MetaMask
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        dispatch({
-          type: MetamaskActions.SetMetaMaskConnected,
-          payload: true,
-        });
-      }
-
-      // Then connect snap if on correct network
-      if (isConnectedNetworkBoba()) {
-        await connectSnap();
-        const installedSnap = await getSnap();
-        dispatch({
-          type: MetamaskActions.SetInstalled,
-          payload: installedSnap,
-        });
-      }
-    } catch (error) {
-      console.error('Error connecting:', error);
-      dispatch({ type: MetamaskActions.SetError, payload: error });
-    }
-  };
-
-  const getNetworkName = () => {
-    switch (currentNetwork) {
-      case '0x70d2': // 28882
-        return 'Boba Sepolia';
-      case '0x120': // 288
-        return 'Boba Mainnet';
-      default:
-        return 'Unsupported Network';
-    }
-  };
-
-  const getConnectionStatus = () => {
-    if (!state.hasMetaMask) {
-      return 'MetaMask Not Found';
-    }
-    if (!state.isMetaMaskConnected) {
-      return 'Not Connected';
-    }
-    if (!state.isBobaSepolia) {
-      return 'Wrong Network';
-    }
-    if (!state.installedSnap) {
-      return 'Snap Not Installed';
-    }
-    return 'Connected';
-  };
 
   const isFullyConnected = Boolean(
     state.hasMetaMask &&
     state.isMetaMaskConnected &&
-    state.isBobaSepolia &&
+    (state.isBobaSepolia || state.isBobaMainnet) &&
     state.installedSnap
   );
 
@@ -214,17 +173,19 @@ export const Header = () => {
         <Title>AA HC Wallet</Title>
       </LogoWrapper>
       <RightContainer>
-        {isFullyConnected && <NetworkStatus>
-          {getNetworkName()}
-        </NetworkStatus>}
+        {isFullyConnected && <NetworkSwitchButton
+          onClick={() => handleNetworkChange(state.isBobaMainnet ? 'sepolia' : 'mainnet')}
+        >
+          Switch to {state.isBobaMainnet ? 'Sepolia' : 'Mainnet'}
+        </NetworkSwitchButton>}
+        {/* {isFullyConnected && (
+          <NetworkStatus>
+            {getNetworkName(state.currentNetwork)}
+          </NetworkStatus>
+        )} */}
         <ConnectionStatus isConnected={isFullyConnected}>
-          {getConnectionStatus()}
+          {getConnectionStatus(state)}
         </ConnectionStatus>
-        {/* <HeaderButtons
-          state={state}
-          onConnectClick={handleConnectClick}
-          updateAvailable={updateAvailable}
-        /> */}
       </RightContainer>
     </HeaderWrapper>
   );

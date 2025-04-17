@@ -54,21 +54,7 @@ const Header = styled.header`
   width: 100%;
 `;
 
-const NetworkSwitchButton = styled.button`
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 2px solid #1098fc;
-  background: transparent;
-  color: #1098fc;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
 
-  &:hover {
-    background: #1098fc22;
-  }
-`;
 
 const snapId = defaultSnapOrigin;
 
@@ -158,20 +144,20 @@ const Index = () => {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setCurrentChainId(chainId as string);
 
-      // Check if we're on a Boba network after switching
-      const isBobaSepolia = isConnectedNetworkBoba();
-      dispatch({
-        type: MetamaskActions.SetNetwork,
-        payload: isBobaSepolia,
-      });
+      // // Check if we're on a Boba network after switching
+      // const isBobaSepolia = isConnectedNetworkBoba();
+      // dispatch({
+      //   type: MetamaskActions.SetNetwork,
+      //   payload: isBobaSepolia,
+      // });
 
-      if (isBobaSepolia) {
-        const installedSnap = await getSnap();
-        dispatch({
-          type: MetamaskActions.SetInstalled,
-          payload: installedSnap,
-        });
-      }
+      // if (isBobaSepolia) {
+      //   const installedSnap = await getSnap();
+      //   dispatch({
+      //     type: MetamaskActions.SetInstalled,
+      //     payload: installedSnap,
+      //   });
+      // }
     } catch (error) {
       console.error('Failed to switch network:', error);
     }
@@ -832,13 +818,23 @@ const Index = () => {
   console.log(`state`, state)
   const renderContent = () => {
     // If MetaMask is not installed or not connected
-    if (!state.isMetaMaskConnected) {
+    if (!state.hasMetaMask || !state.isMetaMaskConnected) {
       return (
         <WelcomeScreen
           onConnectClick={handleConnectClick}
           hasMetaMask={state.hasMetaMask}
           currentNetwork={currentChainId}
           onNetworkChange={handleNetworkChange}
+        />
+      );
+    }
+
+    // If not on a supported Boba network, show network switcher
+    if (!state.isBobaSepolia && !state.isBobaMainnet) {
+      return (
+        <NetworkManager
+          currentNetwork={currentChainId}
+          onNetworkChange={(network) => handleNetworkChange(network === '0x120' ? 'mainnet' : 'sepolia')}
         />
       );
     }
@@ -886,7 +882,6 @@ const Index = () => {
                 handleDelete={async (accountIdToDelete) => {
                   await client.deleteAccount(accountIdToDelete);
                   const accounts = await client.listAccounts();
-                  console.log(` 🚶‍♂️ accounts`, accounts);
                   setSnapState({
                     ...snapState,
                     accounts,
