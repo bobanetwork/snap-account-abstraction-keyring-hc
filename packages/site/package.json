@@ -1,6 +1,6 @@
 {
   "name": "@bobanetwork/snap-account-abstraction-keyring-site",
-  "version": "1.1.19",
+  "version": "1.1.21",
   "private": true,
   "license": "(MIT-0 OR Apache-2.0)",
   "scripts": {
