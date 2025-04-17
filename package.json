@@ -46,6 +46,9 @@
   "dependencies": {
     "postinstall": "^0.9.0"
   },
+  "resolutions": {
+    "@metamask/snaps-sdk": "6.16.0"
+  },
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.3",
     "@jest/globals": "^29.7.0",
