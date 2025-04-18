@@ -1,5 +1,4 @@
-import { MetaMaskError, MetaMaskErrorData } from '../types/metamask';
-export { MetaMaskError, MetaMaskErrorData } from '../types/metamask';
+import { MetaMaskError } from '../types/metamask';
 
 /**
  * Detect if MetaMask is installed.

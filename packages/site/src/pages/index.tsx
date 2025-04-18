@@ -33,7 +33,7 @@ import {
   switchToNetwork,
 } from '../utils/snap';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { detectMetaMask, MetaMaskError, MetaMaskNotFoundError } from '../utils/metamask';
+import { detectMetaMask, MetaMaskNotFoundError } from '../utils/metamask';
 
 const ConnectButton = styled.button`
   padding: 12px 24px;
@@ -285,9 +285,11 @@ const Index = () => {
       }
     };
 
-    listenToAccountChange().catch((error) => {
-      console.error('Error in account change listener:', error);
-    });
+    if (detectMetaMask()) {
+      listenToAccountChange().catch((error) => {
+        console.error('Error in account change listener:', error);
+      });
+    }
 
     // Cleanup listeners on unmount
     return () => {
