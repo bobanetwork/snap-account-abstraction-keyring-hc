@@ -14,14 +14,12 @@ const GuideContainer = styled.div`
 const Title = styled.h1`
   color: #1a1b1f;
   margin-bottom: 1.5rem;
-  font-size: 2rem;
 `;
 
 const Description = styled.p`
   color: #6c757d;
   margin-bottom: 2rem;
   line-height: 1.6;
-  font-size: 1.1rem;
 `;
 
 const StepsContainer = styled.div`
@@ -43,8 +41,8 @@ const Step = styled.div`
 `;
 
 const StepNumber = styled.div`
-  background: #007bff;
-  color: white;
+  background-color: ${(props) => props.theme.colors.primary?.default};
+  color: ${(props) => props.theme.colors.primary?.inverse};
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -61,23 +59,21 @@ const StepContent = styled.div`
 const StepTitle = styled.h3`
   color: #1a1b1f;
   margin-bottom: 0.5rem;
-  font-size: 1.1rem;
 `;
 
 const StepDescription = styled.p`
   color: #6c757d;
   margin: 0;
-  font-size: 1rem;
 `;
 
 const DownloadButton = styled.a`
   display: inline-block;
-  background: #007bff;
-  color: white;
+  background-color: ${(props) => props.theme.colors.primary?.default};
+  color: ${(props) => props.theme.colors.primary?.inverse};
+  border: 1px solid ${(props) => props.theme.colors.primary?.default};
   text-decoration: none;
   padding: 1rem 2rem;
   border-radius: 8px;
-  font-size: 1.1rem;
   font-weight: 500;
   transition: background 0.2s;
 

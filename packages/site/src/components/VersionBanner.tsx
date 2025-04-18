@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import snapPackageInfo from '../../../snap/package.json';
 import { MetaMaskContext } from '../hooks';
 import { defaultSnapOrigin } from '../config';
+import { detectMetaMask } from '../utils';
 
 const BannerWrapper = styled.div`
   display: flex;
@@ -74,6 +75,10 @@ export const VersionBanner: React.FC = () => {
   const installedVersion = state.installedSnap?.version;
   const expectedVersion = snapPackageInfo.version;
   const hasUpdate = installedVersion && expectedVersion !== installedVersion;
+
+  if (!detectMetaMask()) {
+    return <></>
+  }
 
   return (
     <BannerWrapper>

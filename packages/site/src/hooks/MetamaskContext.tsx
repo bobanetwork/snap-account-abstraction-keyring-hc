@@ -3,7 +3,7 @@ import type { Dispatch, ReactNode, Reducer } from 'react';
 import React, { createContext, useEffect, useReducer } from 'react';
 
 import type { Snap } from '../types';
-import { getSnap, hasMetaMask } from '../utils';
+import { detectMetaMask, getSnap } from '../utils';
 
 export type MetamaskState = {
   hasMetaMask: boolean;
@@ -94,7 +94,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const detectInstallation = async () => {
-      const isMetaMaskDetected = await hasMetaMask();
+      const isMetaMaskDetected = detectMetaMask();
       dispatch({
         type: MetamaskActions.SetMetaMaskDetected,
         payload: isMetaMaskDetected,

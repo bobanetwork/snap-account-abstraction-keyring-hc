@@ -1,6 +1,7 @@
 import snapPackageInfo from '../../../snap/package.json';
 import { defaultSnapOrigin } from '../config';
 import type { GetSnapsResponse, Snap } from '../types';
+import { safeMetaMaskOperation } from './metamask';
 
 // Network configuration type
 type NetworkConfig = {
@@ -42,34 +43,36 @@ const NETWORKS: Record<string, NetworkConfig> = {
  * @returns The snaps installed in MetaMask.
  */
 export const getSnaps = async (): Promise<GetSnapsResponse> => {
-  return (await window.ethereum.request({
-    method: 'wallet_getSnaps',
-  })) as unknown as GetSnapsResponse;
+  return await safeMetaMaskOperation(
+    async () => {
+      return (await window.ethereum.request({
+        method: 'wallet_getSnaps',
+      })) as unknown as GetSnapsResponse;
+    },
+    'Failed to get installed snaps'
+  );
 };
 
 export const switchToNetwork = async (
   networkType: 'local' | 'mainnet' | 'sepolia',
 ) => {
-  const network = NETWORKS[networkType];
-  if (!network) {
-    throw new Error('invalid network');
-  }
-  const currentChain = window.ethereum.networkVersion;
+  return await safeMetaMaskOperation(async () => {
+    const network = NETWORKS[networkType];
+    if (!network) {
+      throw new Error('Invalid network');
+    }
 
-  if (currentChain !== network.chainId) {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [
-          {
-            chainId: network.hexChainId,
-          },
-        ],
-      });
-    } catch (error: any) {
-      // If the chain is not added yet
-      if (error.code === 4902) {
-        try {
+    const currentChain = window.ethereum.networkVersion;
+
+    if (currentChain !== network.chainId) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: network.hexChainId }],
+        });
+      } catch (error: any) {
+        // If the chain is not added yet
+        if (error.code === 4902) {
           // Try adding the network
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
@@ -93,20 +96,12 @@ export const switchToNetwork = async (
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: network.hexChainId }],
           });
-        } catch (addError: any) {
-          console.error(
-            'Failed to add Ethereum chain:',
-            addError.message || addError,
-          );
+        } else {
+          throw error;
         }
-      } else {
-        console.error(
-          'Failed to switch Ethereum chain:',
-          switchError.message || switchError,
-        );
       }
     }
-  }
+  }, 'Failed to switch network');
 };
 
 /**
@@ -122,12 +117,17 @@ export const connectSnap = async (
     version: snapPackageInfo.version,
   },
 ) => {
-  await window.ethereum.request({
-    method: 'wallet_requestSnaps',
-    params: {
-      [snapId]: params,
+  return await safeMetaMaskOperation(
+    async () => {
+      await window.ethereum.request({
+        method: 'wallet_requestSnaps',
+        params: {
+          [snapId]: params,
+        },
+      });
     },
-  });
+    'Failed to connect snap'
+  );
 };
 
 // Utility function that combines network switching and snap connection
@@ -142,12 +142,23 @@ export const connectSnapWithNetwork = async (
   await connectSnap(snapId, params);
 };
 
-export const loadAccountConnected = async () => {
-  const accounts: any = await window.ethereum.request({
-    method: 'eth_requestAccounts',
-    params: [],
-  });
-  return accounts[0];
+export const loadAccountConnected = async (): Promise<string | undefined> => {
+  return safeMetaMaskOperation(
+    async () => {
+      const response = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+        params: [],
+      });
+
+      const accounts = response as string[];
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      return accounts[0];
+    },
+    'Failed to load connected account'
+  );
 };
 
 /**
@@ -159,12 +170,12 @@ export const loadAccountConnected = async () => {
 export const getSnap = async (version?: string): Promise<Snap | undefined> => {
   try {
     const snaps = await getSnaps();
-
     return Object.values(snaps).find(
       (snap) =>
         snap.id === defaultSnapOrigin && (!version || snap.version === version),
     );
   } catch (error) {
+    console.error('Failed to get snap:', error);
     return undefined;
   }
 };
@@ -174,13 +185,18 @@ export const getSnap = async (version?: string): Promise<Snap | undefined> => {
  */
 
 export const sendHello = async () => {
-  await window.ethereum.request({
-    method: 'wallet_invokeSnap',
-    params: {
-      snapId: defaultSnapOrigin,
-      request: { method: 'snap.internal.hello' },
+  return await safeMetaMaskOperation(
+    async () => {
+      await window.ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: defaultSnapOrigin,
+          request: { method: 'snap.internal.hello' },
+        },
+      });
     },
-  });
+    'Failed to send hello'
+  );
 };
 
 /**
@@ -236,7 +252,19 @@ export const isUsingPaymaster = async (): Promise<boolean> => {
 
 export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');
 
-export const isConnectedNetworkBoba = () => {
-  const currentChain = window.ethereum.networkVersion;
-  return currentChain === '28882' || currentChain === '288';
+export const isConnectedNetworkBoba = (): boolean => {
+  try {
+    if (!window.ethereum?.networkVersion) {
+      return false;
+    }
+
+    const sepoliaChainId = NETWORKS['sepolia']?.chainId;
+    const mainnetChainId = NETWORKS['mainnet']?.chainId;
+
+    return window.ethereum.networkVersion === sepoliaChainId ||
+      window.ethereum.networkVersion === mainnetChainId;
+  } catch (error) {
+    console.error('Error checking network:', error);
+    return false;
+  }
 };

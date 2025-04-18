@@ -33,6 +33,7 @@ import {
   switchToNetwork,
 } from '../utils/snap';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { detectMetaMask, MetaMaskError, MetaMaskNotFoundError } from '../utils/metamask';
 
 const ConnectButton = styled.button`
   padding: 12px 24px;
@@ -98,16 +99,10 @@ export type NetworkManagerProps = {
   onNetworkChange: (networkType: 'mainnet' | 'sepolia') => Promise<void>;
 };
 
-const detectMetaMask = () => {
-  return typeof window !== 'undefined' &&
-    typeof window.ethereum !== 'undefined' &&
-    window.ethereum.isMetaMask === true;
-};
-
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
-  console.log(`snapState`, snapState);
+
   // Is not a good practice to store sensitive data in the state of
   // a component but for this case it should be ok since this is an
   // internal development and testing tool.
@@ -133,29 +128,18 @@ const Index = () => {
   // Add new state for MetaMask detection
   const [isMetaMaskDetected, setIsMetaMaskDetected] = useState<boolean>(false);
 
+  // Add error state
+  const [error, setError] = useState<Error | null>(null);
+
   const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
     try {
-      console.log(`switching to ${networkType}`)
+      setError(null);
       await switchToNetwork(networkType);
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setCurrentChainId(chainId as string);
-
-      // // Check if we're on a Boba network after switching
-      // const isBobaSepolia = isConnectedNetworkBoba();
-      // dispatch({
-      //   type: MetamaskActions.SetNetwork,
-      //   payload: isBobaSepolia,
-      // });
-
-      // if (isBobaSepolia) {
-      //   const installedSnap = await getSnap();
-      //   dispatch({
-      //     type: MetamaskActions.SetInstalled,
-      //     payload: installedSnap,
-      //   });
-      // }
-    } catch (error) {
-      console.error('Failed to switch network:', error);
+    } catch (err) {
+      console.error('Failed to switch network:', err);
+      setError(err instanceof Error ? err : new Error('Failed to switch network'));
     }
   };
 
@@ -164,7 +148,9 @@ const Index = () => {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setCurrentChainId(chainId as string);
     };
-    getCurrentNetwork();
+    if (detectMetaMask()) {
+      getCurrentNetwork();
+    }
   }, []);
 
   useEffect(() => {
@@ -195,7 +181,7 @@ const Index = () => {
             const currentAccount = await loadAccountConnected();
             const account = snapAccounts.find(
               (acc) =>
-                acc.address.toLowerCase() === currentAccount.toLowerCase(),
+                acc.address.toLowerCase() === currentAccount?.toLowerCase(),
             );
             setSelectedAccount(account);
             setSnapState({
@@ -249,7 +235,7 @@ const Index = () => {
             const currentAccount = await loadAccountConnected();
             const account = accounts.find(
               (acc) =>
-                acc.address.toLowerCase() === currentAccount.toLowerCase(),
+                acc.address.toLowerCase() === currentAccount?.toLowerCase(),
             );
             setSelectedAccount(account);
             setSnapState({
@@ -305,8 +291,10 @@ const Index = () => {
 
     // Cleanup listeners on unmount
     return () => {
-      window.ethereum.removeListener('accountsChanged', () => {});
-      window.ethereum.removeListener('chainChanged', () => {});
+      if (detectMetaMask()) {
+        window.ethereum.removeListener('accountsChanged', () => { });
+        window.ethereum.removeListener('chainChanged', () => { });
+      }
     };
   }, []);
 
@@ -327,7 +315,7 @@ const Index = () => {
         const accounts = await client.listAccounts();
         const currentAccount = await loadAccountConnected();
         const account = accounts.find(
-          (acc) => acc.address.toLowerCase() === currentAccount.toLowerCase(),
+          (acc) => acc.address.toLowerCase() === currentAccount?.toLowerCase(),
         );
         setSelectedAccount(account);
 
@@ -414,7 +402,8 @@ const Index = () => {
       method = 'eth_sendUserOpBobaPM';
     }
 
-    return await window.ethereum.request({
+    return await window.ethereum
+      ?.request({
       method: 'wallet_invokeSnap',
       params: {
         snapId: defaultSnapOrigin,
@@ -644,10 +633,16 @@ const Index = () => {
     return submitRes;
   };
 
+  // Modify handleConnectClick to use better error handling
   const handleConnectClick = async () => {
     try {
+      setError(null);
+
+      if (!detectMetaMask()) {
+        throw new MetaMaskNotFoundError();
+      }
+
       if (!state.isMetaMaskConnected) {
-        // First connect MetaMask
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         dispatch({
           type: MetamaskActions.SetMetaMaskConnected,
@@ -663,7 +658,6 @@ const Index = () => {
       });
 
       if (isBobaSepolia) {
-        // Then connect snap
         await connectSnap();
         const installedSnap = await getSnap();
         dispatch({
@@ -671,23 +665,27 @@ const Index = () => {
           payload: installedSnap,
         });
       }
-    } catch (error) {
-      console.error('Error connecting:', error);
-      dispatch({ type: MetamaskActions.SetError, payload: error });
+    } catch (err: any) {
+      console.error('Error connecting:', err);
+      setError(err);
+      dispatch({ type: MetamaskActions.SetError, payload: err });
     }
   };
 
+  // Modify handleSnapInstall to use better error handling
   const handleSnapInstall = async () => {
     try {
+      setError(null);
       await connectSnap();
       const installedSnap = await getSnap();
       dispatch({
         type: MetamaskActions.SetInstalled,
         payload: installedSnap,
       });
-    } catch (error) {
-      console.error('Error installing snap:', error);
-      dispatch({ type: MetamaskActions.SetError, payload: error });
+    } catch (err: any) {
+      console.error('Error installing snap:', err);
+      setError(err);
+      dispatch({ type: MetamaskActions.SetError, payload: err });
     }
   };
 
@@ -831,19 +829,36 @@ const Index = () => {
     }
   }, []);
 
-  // Modify renderContent to handle MetaMask absence gracefully
+  // Modify renderContent to handle errors
   const renderContent = () => {
+    // If there's an error, show it
+    if (error) {
+      return (
+        <Card
+          content={{
+            title: 'Error',
+            description: error.message,
+            button: (
+              <ConnectButton onClick={() => setError(null)}>
+                Dismiss
+              </ConnectButton>
+            ),
+          }}
+        />
+      );
+    }
+
     // If MetaMask is not detected, show installation guide
     if (!isMetaMaskDetected) {
       return <MetaMaskGuide />;
     }
 
-    // If MetaMask is not installed or not connected
-    if (!state.hasMetaMask || !state.isMetaMaskConnected) {
+    // If MetaMask is not connected
+    if (!state.isMetaMaskConnected) {
       return (
         <WelcomeScreen
           onConnectClick={handleConnectClick}
-          hasMetaMask={state.hasMetaMask}
+          hasMetaMask={true}
           currentNetwork={currentChainId}
           onNetworkChange={handleNetworkChange}
         />
