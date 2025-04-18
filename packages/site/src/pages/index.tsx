@@ -12,6 +12,7 @@ import {
   Card,
   NetworkManager,
   WelcomeScreen,
+  MetaMaskGuide,
 } from '../components';
 import {
   CardContainer,
@@ -31,6 +32,7 @@ import {
   loadAccountConnected,
   switchToNetwork,
 } from '../utils/snap';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const ConnectButton = styled.button`
   padding: 12px 24px;
@@ -96,6 +98,12 @@ export type NetworkManagerProps = {
   onNetworkChange: (networkType: 'mainnet' | 'sepolia') => Promise<void>;
 };
 
+const detectMetaMask = () => {
+  return typeof window !== 'undefined' &&
+    typeof window.ethereum !== 'undefined' &&
+    window.ethereum.isMetaMask === true;
+};
+
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
@@ -121,6 +129,9 @@ const Index = () => {
   const client = new KeyringSnapRpcClient(snapId, window.ethereum as any);
   const abiCoder = new ethers.AbiCoder();
   const [currentChainId, setCurrentChainId] = useState<string>('');
+
+  // Add new state for MetaMask detection
+  const [isMetaMaskDetected, setIsMetaMaskDetected] = useState<boolean>(false);
 
   const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
     try {
@@ -792,7 +803,41 @@ const Index = () => {
     },
   ];
 
+  // Add effect for MetaMask detection
+  useEffect(() => {
+    const checkMetaMask = () => {
+      const hasMetaMask = detectMetaMask();
+      setIsMetaMaskDetected(hasMetaMask);
+      dispatch({
+        type: MetamaskActions.SetMetaMaskDetected,
+        payload: hasMetaMask,
+      });
+    };
+
+    checkMetaMask();
+
+    // Add listener for MetaMask installation
+    if (typeof window !== 'undefined') {
+      window.addEventListener('ethereum#initialized', checkMetaMask, {
+        once: true,
+      });
+
+      // Cleanup timeout after 3 seconds
+      const timeout = setTimeout(checkMetaMask, 3000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, []);
+
+  // Modify renderContent to handle MetaMask absence gracefully
   const renderContent = () => {
+    // If MetaMask is not detected, show installation guide
+    if (!isMetaMaskDetected) {
+      return <MetaMaskGuide />;
+    }
+
     // If MetaMask is not installed or not connected
     if (!state.hasMetaMask || !state.isMetaMaskConnected) {
       return (
@@ -870,10 +915,15 @@ const Index = () => {
     );
   };
 
+  // Wrap the return with ErrorBoundary
   return (
-    <Container>
-      <CardContainer>{renderContent()}</CardContainer>
-    </Container>
+    <ErrorBoundary>
+      <Container>
+        <CardContainer>
+          {renderContent()}
+        </CardContainer>
+      </Container>
+    </ErrorBoundary>
   );
 };
 

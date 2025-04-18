@@ -54,7 +54,7 @@ export const NetworkManager: React.FC<NetworkManagerProps> = ({
                 <NetworkButton
                   key={chainId}
                   isActive={currentNetwork === chainId}
-                  onClick={() => onNetworkChange(chainId)}
+                  onClick={() => onNetworkChange(chainId as any)}
                 >
                   Connect to {name}
                 </NetworkButton>

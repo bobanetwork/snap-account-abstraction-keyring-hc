@@ -1,15 +1,16 @@
 import type { GatsbyBrowser } from 'gatsby';
-import React, { StrictMode } from 'react';
+import React from 'react';
 
 import { App } from './src/App';
 import { Root } from './src/Root';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 export const wrapRootElement: GatsbyBrowser['wrapRootElement'] = ({
   element,
 }) => (
-  <StrictMode>
+  <ErrorBoundary>
     <Root>{element}</Root>
-  </StrictMode>
+  </ErrorBoundary>
 );
 
 export const wrapPageElement: GatsbyBrowser['wrapPageElement'] = ({

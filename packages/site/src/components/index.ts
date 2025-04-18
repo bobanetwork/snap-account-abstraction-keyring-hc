@@ -11,3 +11,4 @@ export * from './Accordion';
 export * from './AlertBanner';
 export * from './NetworkManager';
 export * from './WelcomeScreen';
+export { default as MetaMaskGuide } from './MetaMaskGuide';
