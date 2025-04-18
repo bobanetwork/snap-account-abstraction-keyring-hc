@@ -124,6 +124,7 @@ const Index = () => {
 
   const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
     try {
+      console.log(`switching to ${networkType}`)
       await switchToNetwork(networkType);
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setCurrentChainId(chainId as string);
@@ -791,7 +792,6 @@ const Index = () => {
     },
   ];
 
-  console.log(`state`, state);
   const renderContent = () => {
     // If MetaMask is not installed or not connected
     if (!state.hasMetaMask || !state.isMetaMaskConnected) {
@@ -810,9 +810,7 @@ const Index = () => {
       return (
         <NetworkManager
           currentNetwork={currentChainId}
-          onNetworkChange={async (network) =>
-            handleNetworkChange(network === '0x120' ? 'mainnet' : 'sepolia')
-          }
+          onNetworkChange={handleNetworkChange}
         />
       );
     }

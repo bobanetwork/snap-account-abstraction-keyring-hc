@@ -29,12 +29,12 @@ const NetworkGrid = styled.div`
 
 export type NetworkManagerProps = {
   currentNetwork: string;
-  onNetworkChange: (network: string) => void;
+  onNetworkChange: (network: 'mainnet' | 'sepolia') => Promise<void>;
 };
 
 const SUPPORTED_NETWORKS = {
-  'Boba Mainnet': '0xa',
-  'Boba Sepolia': '0x1c',
+  'Boba Mainnet': 'mainnet',
+  'Boba Sepolia': 'sepolia',
 };
 
 export const NetworkManager: React.FC<NetworkManagerProps> = ({
