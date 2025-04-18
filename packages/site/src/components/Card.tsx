@@ -41,6 +41,7 @@ const CardWrapper = styled.div<{ fullWidth?: boolean; disabled: boolean }>`
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.large};
   margin: 0;
+  text-align: center;
   ${({ theme }) => theme.mediaQueries.small} {
     font-size: ${({ theme }) => theme.fontSizes.text};
   }

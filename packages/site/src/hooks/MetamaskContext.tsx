@@ -1,18 +1,28 @@
+/* eslint-disable */
 import type { Dispatch, ReactNode, Reducer } from 'react';
 import React, { createContext, useEffect, useReducer } from 'react';
 
 import type { Snap } from '../types';
-import { hasMetaMask, getSnap, isConnectedNetworkBoba } from '../utils';
+import { detectMetaMask, getSnap } from '../utils';
 
 export type MetamaskState = {
   hasMetaMask: boolean;
-  installedSnap?: Snap;
-  isBobaSepolia?: Snap;
-  error?: Error;
+  isMetaMaskConnected: boolean;
+  installedSnap?: Snap | null;
+  isBobaSepolia: boolean;
+  isBobaMainnet: boolean;
+  currentNetwork?: string | null;
+  error?: Error | null;
 };
 
 const initialState: MetamaskState = {
   hasMetaMask: false,
+  isMetaMaskConnected: false,
+  isBobaSepolia: false,
+  isBobaMainnet: false,
+  currentNetwork: null,
+  installedSnap: null,
+  error: null,
 };
 
 type MetamaskDispatch = { type: MetamaskActions; payload: any };
@@ -30,6 +40,7 @@ export enum MetamaskActions {
   SetInstalled = 'SetInstalled',
   SetNetwork = 'SetNetwork',
   SetMetaMaskDetected = 'SetMetaMaskDetected',
+  SetMetaMaskConnected = 'SetMetaMaskConnected',
   SetError = 'SetError',
 }
 
@@ -38,26 +49,30 @@ const reducer: Reducer<MetamaskState, MetamaskDispatch> = (state, action) => {
     case MetamaskActions.SetNetwork:
       return {
         ...state,
-        isBobaSepolia: action.payload,
+        currentNetwork: action.payload.chainId,
+        isBobaSepolia: action.payload.chainId === '0x70d2',
+        isBobaMainnet: action.payload.chainId === '0x120',
       };
     case MetamaskActions.SetInstalled:
       return {
         ...state,
         installedSnap: action.payload,
       };
-
     case MetamaskActions.SetMetaMaskDetected:
       return {
         ...state,
         hasMetaMask: action.payload,
       };
-
+    case MetamaskActions.SetMetaMaskConnected:
+      return {
+        ...state,
+        isMetaMaskConnected: action.payload,
+      };
     case MetamaskActions.SetError:
       return {
         ...state,
         error: action.payload,
       };
-
     default:
       return state;
   }
@@ -79,53 +94,103 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const detectInstallation = async () => {
-      /**
-       * Detect if MetaMask is installed.
-       */
-      async function detectMetaMask() {
-        const isMetaMaskDetected = await hasMetaMask();
+      const isMetaMaskDetected = detectMetaMask();
+      dispatch({
+        type: MetamaskActions.SetMetaMaskDetected,
+        payload: isMetaMaskDetected,
+      });
 
-        dispatch({
-          type: MetamaskActions.SetMetaMaskDetected,
-          payload: isMetaMaskDetected,
-        });
-      }
+      if (isMetaMaskDetected && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: 'eth_accounts',
+          });
+          const isConnected = Array.isArray(accounts) && accounts.length > 0;
+          dispatch({
+            type: MetamaskActions.SetMetaMaskConnected,
+            payload: isConnected,
+          });
 
-      /**
-       * Detect if the snap is installed.
-       */
-      async function detectSnapInstalled() {
-        const installedSnap = await getSnap();
-        dispatch({
-          type: MetamaskActions.SetInstalled,
-          payload: installedSnap,
-        });
-      }
+          if (isConnected) {
+            const chainId = await window.ethereum.request({
+              method: 'eth_chainId',
+            });
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: { chainId },
+            });
 
-      /**
-       * Detect if the snap is installed.
-       */
-      async function detectNetworkInstalled() {
-        const isBobaSepolia = isConnectedNetworkBoba();
-        dispatch({
-          type: MetamaskActions.SetNetwork,
-          payload: isBobaSepolia,
-        });
-      }
-
-      await detectMetaMask();
-
-      if (state.hasMetaMask) {
-        await detectNetworkInstalled();
-
-        if (state.isBobaSepolia) {
-          await detectSnapInstalled();
+            // Check snap installation if on a Boba network
+            if (chainId === '0x70d2' || chainId === '0x120') {
+              const installedSnap = await getSnap();
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: installedSnap,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error checking MetaMask connection:', error);
+          dispatch({
+            type: MetamaskActions.SetError,
+            payload: error,
+          });
         }
+
+        // Setup event listeners
+        window.ethereum.on('accountsChanged', (accounts: unknown) => {
+          const isConnected = Array.isArray(accounts) && accounts.length > 0;
+          dispatch({
+            type: MetamaskActions.SetMetaMaskConnected,
+            payload: isConnected,
+          });
+
+          if (!isConnected) {
+            dispatch({
+              type: MetamaskActions.SetInstalled,
+              payload: null,
+            });
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: { chainId: null },
+            });
+          }
+        });
+
+        window.ethereum.on('chainChanged', async (chainId: unknown) => {
+          if (typeof chainId === 'string') {
+            dispatch({
+              type: MetamaskActions.SetNetwork,
+              payload: { chainId },
+            });
+
+            // Re-check snap installation on network change
+            if (chainId === '0x70d2' || chainId === '0x120') {
+              const installedSnap = await getSnap();
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: installedSnap,
+              });
+            } else {
+              dispatch({
+                type: MetamaskActions.SetInstalled,
+                payload: null,
+              });
+            }
+          }
+        });
       }
     };
 
     detectInstallation().catch(console.error);
-  }, [state.hasMetaMask, window.ethereum]);
+
+    return () => {
+      if (window.ethereum?.removeListener) {
+        window.ethereum.removeListener('accountsChanged', () => {});
+        window.ethereum.removeListener('chainChanged', () => {});
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let timeoutId: number;
@@ -134,7 +199,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
       timeoutId = window.setTimeout(() => {
         dispatch({
           type: MetamaskActions.SetError,
-          payload: undefined,
+          payload: null,
         });
       }, 10000);
     }

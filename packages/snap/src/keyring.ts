@@ -504,16 +504,18 @@ export class AccountAbstractionKeyring implements Keyring {
     params: Json;
   }): Promise<Json> {
     const { chainId } = await provider.getNetwork();
+    // @ts-ignore
+    let pscope = params && params[`0`]?.scope;
     try {
-      const parsedScope = parseCaipChainId(scope as CaipChainId);
+      const parsedScope = parseCaipChainId(pscope as CaipChainId);
       if (String(chainId) !== parsedScope.reference) {
         throwError(
-          `[Snap] Chain ID '${chainId}' mismatch with scope '${scope}'`,
+          `[Snap] Chain ID '${chainId}' mismatch with scope '${pscope}'`,
         );
       }
     } catch (error) {
       throwError(
-        `[Snap] Error parsing request scope '${scope}': ${
+        `[Snap] Error parsing request scope '${pscope}': ${
           (error as Error).message
         }`,
       );
@@ -521,7 +523,7 @@ export class AccountAbstractionKeyring implements Keyring {
     if (!this.#isSupportedChain(Number(chainId))) {
       throwError(`[Snap] Unsupported chain ID: ${Number(chainId)}`);
     }
-    if (!this.#doesAccountSupportChain(account.id, scope)) {
+    if (!this.#doesAccountSupportChain(account.id, pscope)) {
       throwError(`[Snap] Account does not support chain: ${scope}`);
     }
 

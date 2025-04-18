@@ -5,9 +5,20 @@ import styled from 'styled-components';
 
 import snapPackageInfo from '../../../snap/package.json';
 import Logo from '../assets/boba-logo-full.svg';
-import { MetamaskActions, MetaMaskContext } from '../hooks';
-import { connectSnap, getSnap } from '../utils';
-import { HeaderButtons } from './Buttons';
+import { MetaMaskContext, MetamaskState } from '../hooks';
+import { switchToNetwork } from '../utils';
+
+const NetworkSwitchButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 8px;
+
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+
+`;
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -85,9 +96,7 @@ const ConnectionStatus = styled.div<{ isConnected: boolean }>`
     height: 0.8rem;
     border-radius: 50%;
     background: ${({ isConnected, theme }) =>
-  isConnected
-    ? theme.colors.success?.default
-    : theme.colors.error?.default};
+  isConnected ? theme.colors.success?.default : theme.colors.error?.default};
   }
 
   ${({ theme }) => theme.mediaQueries.small} {
@@ -95,67 +104,88 @@ const ConnectionStatus = styled.div<{ isConnected: boolean }>`
   }
 `;
 
-const NetworkButton = styled.button`
-  background: ${({ theme }) => theme.colors.background?.alternative};
-  color: ${({ theme }) => theme.colors.text?.default};
-  border: 1px solid ${({ theme }) => theme.colors.border?.default};
+const NetworkStatus = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   padding: 0.8rem 1.2rem;
   border-radius: 1.2rem;
-  cursor: pointer;
+  background: ${({ theme }) => theme.colors.background?.alternative};
+  color: ${({ theme }) => theme.colors.text?.default};
   font-size: ${({ theme }) => theme.fontSizes.small};
   font-weight: 500;
-  transition: all 0.2s ease-in-out;
-  min-height: unset;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.background?.default};
-    border-color: ${({ theme }) => theme.colors.primary?.default};
-    color: ${({ theme }) => theme.colors.primary?.default};
-  }
-
-  ${({ theme }) => theme.mediaQueries.small} {
-    padding: 0.6rem 1rem;
-  }
 `;
+
+const getNetworkName = (chainId?: string) => {
+  switch (chainId) {
+    case '0x70d2': // 28882
+      return 'Boba Sepolia';
+    case '0x120': // 288
+      return 'Boba Mainnet';
+    default:
+      return 'Unsupported Network';
+  }
+};
+
+const getConnectionStatus = (state: MetamaskState) => {
+  if (!state.hasMetaMask) {
+    return 'MetaMask Not Found';
+  }
+  if (!state.isMetaMaskConnected) {
+    return 'Not Connected';
+  }
+  if (!state.isBobaSepolia && !state.isBobaMainnet) {
+    return 'Wrong Network';
+  }
+  if (!state.installedSnap) {
+    return 'Snap Not Installed';
+  }
+  return `Connected to ${getNetworkName(state.currentNetwork)}`;
+};
 
 export const Header = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
 
-  const updateAvailable = Boolean(
-    state?.installedSnap &&
-      semver.gt(snapPackageInfo.version, state.installedSnap?.version),
-  );
-
-  const handleConnectClick = async () => {
+  const handleNetworkChange = async (networkType: 'mainnet' | 'sepolia') => {
     try {
-      await connectSnap();
-      const installedSnap = await getSnap();
-
-      dispatch({
-        type: MetamaskActions.SetInstalled,
-        payload: installedSnap,
-      });
+      await switchToNetwork(networkType);
     } catch (error) {
-      dispatch({ type: MetamaskActions.SetError, payload: error });
+      console.error('Failed to switch network:', error);
     }
   };
+
+  const updateAvailable = Boolean(
+    state?.installedSnap &&
+    semver.gt(snapPackageInfo.version, state.installedSnap?.version),
+  );
+
+  const isFullyConnected = Boolean(
+    state.hasMetaMask &&
+    state.isMetaMaskConnected &&
+    (state.isBobaSepolia || state.isBobaMainnet) &&
+    state.installedSnap
+  );
 
   return (
     <HeaderWrapper>
       <LogoWrapper>
         <BobaLogo src={Logo} alt="Boba Network Logo" />
+        <Title>AA HC Wallet</Title>
       </LogoWrapper>
-      <Title>AA HC Wallet</Title>
       <RightContainer>
-        <NetworkButton>Boba Sepolia</NetworkButton>
-        <ConnectionStatus isConnected={Boolean(state.installedSnap)}>
-          {state.installedSnap !== null ? 'Connected' : 'Not Connected'}
+        {isFullyConnected && <NetworkSwitchButton
+          onClick={() => handleNetworkChange(state.isBobaMainnet ? 'sepolia' : 'mainnet')}
+        >
+          Switch to {state.isBobaMainnet ? 'Sepolia' : 'Mainnet'}
+        </NetworkSwitchButton>}
+        {/* {isFullyConnected && (
+          <NetworkStatus>
+            {getNetworkName(state.currentNetwork)}
+          </NetworkStatus>
+        )} */}
+        <ConnectionStatus isConnected={isFullyConnected}>
+          {getConnectionStatus(state)}
         </ConnectionStatus>
-        <HeaderButtons
-          state={state}
-          onConnectClick={handleConnectClick}
-          updateAvailable={updateAvailable}
-        />
       </RightContainer>
     </HeaderWrapper>
   );
