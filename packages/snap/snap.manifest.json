@@ -28,7 +28,8 @@
         "https://hub.boba.network",
         "https://staging.hub.boba.network",
         "https://stagingv2.hub.boba.network",
-        "https://codecaster.onrender.com"
+        "https://codecaster.onrender.com",
+        "https://pricefeed-frontend.onrender.com"
       ]
     },
     "endowment:rpc": {
