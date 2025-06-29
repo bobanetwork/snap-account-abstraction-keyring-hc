@@ -44,7 +44,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://gateway.boba.network',
+    'https://hub.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
@@ -65,7 +65,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://staging.gateway.boba.network',
+    'https://staging.hub.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
@@ -86,7 +86,7 @@ export const originPermissions = new Map<string, string[]>([
     ],
   ],
   [
-    'https://stagingv2.gateway.boba.network',
+    'https://stagingv2.hub.boba.network',
     [
       // Keyring methods
       KeyringRpcMethod.ListAccounts,
