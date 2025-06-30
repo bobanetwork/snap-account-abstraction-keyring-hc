@@ -1,4 +1,4 @@
-import { MetaMaskError } from '../types/metamask';
+import { MetaMaskError } from "../types";
 
 /**
  * Detect if MetaMask is installed.
