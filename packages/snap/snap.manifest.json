@@ -18,20 +18,6 @@
     }
   },
   "initialPermissions": {
-    "endowment:keyring": {
-      "allowedOrigins": [
-        "http://localhost:*",
-        "https://hc-wallet.sepolia.boba.network",
-        "https://aa-hc-example-fe.onrender.com/",
-        "https://boba-blockchain-busters-frontend.onrender.com",
-        "https://presibot.onrender.com",
-        "https://hub.boba.network",
-        "https://staging.hub.boba.network",
-        "https://stagingv2.hub.boba.network",
-        "https://codecaster.onrender.com",
-        "https://pricefeed-frontend.onrender.com"
-      ]
-    },
     "endowment:rpc": {
       "dapps": true
     },
