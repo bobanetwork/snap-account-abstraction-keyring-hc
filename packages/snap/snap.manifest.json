@@ -7,7 +7,7 @@
     "url": "git+https://github.com/bobanetwork/snap-account-abstraction-keyring-hc.git"
   },
   "source": {
-    "shasum": "RtZsNLxOwozfqKyiaiWPeKxZX47G0a6VHiHUUxd2y/0=",
+    "shasum": "MGe7eNxJot3mVRxNn3iqjbgfi4YwQnHCd8ESXDYB9v8=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -18,20 +18,6 @@
     }
   },
   "initialPermissions": {
-    "endowment:keyring": {
-      "allowedOrigins": [
-        "http://localhost:*",
-        "https://hc-wallet.sepolia.boba.network",
-        "https://aa-hc-example-fe.onrender.com/",
-        "https://boba-blockchain-busters-frontend.onrender.com",
-        "https://presibot.onrender.com",
-        "https://hub.boba.network",
-        "https://staging.hub.boba.network",
-        "https://stagingv2.hub.boba.network",
-        "https://codecaster.onrender.com",
-        "https://pricefeed-frontend.onrender.com"
-      ]
-    },
     "endowment:rpc": {
       "dapps": true
     },
