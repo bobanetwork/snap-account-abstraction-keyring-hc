@@ -1,3 +1,5 @@
+import { KeyringRpcMethod } from '@metamask/keyring-api';
+
 export enum InternalMethod {
   ToggleSyncApprovals = 'snap.internal.toggleSynchronousApprovals',
   IsSynchronousMode = 'snap.internal.isSynchronousMode',
@@ -5,47 +7,208 @@ export enum InternalMethod {
   SendUserOpBobaPM = 'eth_sendUserOpBobaPM',
 }
 
-const PERMISSIONS_URL =
-  'https://raw.githubusercontent.com/bobanetwork/snap-account-abstraction-keyring-hc/refs/heads/main/permissions.json';
-
-const defaultPermissions = new Map<string, string[]>([]);
-
-let cachedPermissions: Map<string, string[]> | null = null;
-let lastFetchTime = 0;
-let fetchPromise: Promise<Map<string, string[]>> | null = null;
-const CACHE_DURATION = 5 * 60 * 1000;
-
-export async function getOriginPermissions(): Promise<Map<string, string[]>> {
-  const now = Date.now();
-
-  if (cachedPermissions && now - lastFetchTime < CACHE_DURATION) {
-    return cachedPermissions;
-  }
-
-  if (fetchPromise) {
-    return fetchPromise;
-  }
-
-  fetchPromise = (async () => {
-    try {
-      const response = await fetch(PERMISSIONS_URL);
-      const data = (await response.json()) as Record<string, string[]>;
-      const permissions = new Map(Object.entries(data));
-      cachedPermissions = permissions;
-      lastFetchTime = Date.now();
-      return permissions;
-    } catch (error) {
-      console.error(
-        '[Snap] Error fetching permissions, using defaults:',
-        error,
-      );
-      cachedPermissions = defaultPermissions;
-      lastFetchTime = Date.now();
-      return defaultPermissions;
-    } finally {
-      fetchPromise = null;
-    }
-  })();
-
-  return fetchPromise;
-}
+export const originPermissions = new Map<string, string[]>([
+  [
+    'metamask',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.RejectRequest,
+    ],
+  ],
+  [
+    'http://localhost',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://hub.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://staging.hub.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://stagingv2.hub.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://hc-wallet.sepolia.boba.network',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://aa-hc-example-fe.onrender.com',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://presibot.onrender.com',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://codecaster.onrender.com',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+  [
+    'https://pricefeed-frontend.onrender.com',
+    [
+      // Keyring methods
+      KeyringRpcMethod.ListAccounts,
+      KeyringRpcMethod.GetAccount,
+      KeyringRpcMethod.CreateAccount,
+      KeyringRpcMethod.FilterAccountChains,
+      KeyringRpcMethod.UpdateAccount,
+      KeyringRpcMethod.DeleteAccount,
+      KeyringRpcMethod.ExportAccount,
+      KeyringRpcMethod.SubmitRequest,
+      KeyringRpcMethod.ListRequests,
+      KeyringRpcMethod.GetRequest,
+      KeyringRpcMethod.ApproveRequest,
+      KeyringRpcMethod.RejectRequest,
+      // Custom methods
+      InternalMethod.SendUserOpBoba,
+      InternalMethod.SendUserOpBobaPM,
+    ],
+  ],
+]);
